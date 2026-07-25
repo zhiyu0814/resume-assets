@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ResearchFlow Agent V2.5｜一次精读，多处复用</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500;600&display=swap" rel="stylesheet" />
+<meta name="description" content="面向已经明确研究方向的科研人员，将论文中的事实、参数和文献依据整理为可追溯、可复用的研究资产。V2.5 = V2 文案骨架 + V1 视觉系统。" />
+<meta name="theme-color" content="#F7F3EA" />
+<meta property="og:title" content="ResearchFlow Agent｜一次精读，多处复用" />
+<meta property="og:description" content="一次精读，多处复用。让论文依据持续支撑方法选择、实验设计与论文写作。" />
+<meta property="og:type" content="website" />
+<meta property="og:image" content="https://zhiyu0814.github.io/resume-assets/assets/researchflow-og-v2.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://zhiyu0814.github.io/resume-assets/assets/researchflow-og-v2.png" />
+<style>
+  :root{
+    --paper:#F7F3EA;
+    --paper-deep:#F2ECDD;
+    --ink:#1B1A17;
+    --ink-2:#57534E;
+    --ink-3:#8A8378;
+    --accent:#11695A;
+    --accent-soft:#E7F1ED;
+    --card:#FFFDF8;
+    --line:#E4DDCD;
+    --line-2:#E9E2D4;
+    --serif:"Noto Serif SC","Source Han Serif CN",serif;
+    --sans:"Noto Sans SC","Source Han Sans CN",sans-serif;
+    --mono:"Source Code Pro",ui-monospace,monospace;
+    --maxw:1200px;
+    --c-zotero:#CC2936;
+    --c-obsidian:#7C3AED;
+    --c-codex:#2563EB;
+    --c-skills:#11695A;
+    --amber:#9A5C13;
+    --amber-bg:#F6EAD7;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 40px;}
+  a{color:inherit;text-decoration:none;}
+  .mono{font-family:var(--mono);}
+
+  /* ---------- Header ---------- */
+  header{position:sticky;top:0;z-index:50;background:rgba(247,243,234,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:72px;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand .wm{font-family:var(--serif);font-weight:700;font-size:19px;color:var(--ink);}
+  .brand .tag{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.08em;color:var(--accent);}
+  .nav-links{display:flex;align-items:center;gap:30px;}
+  .nav-links a{font-size:14px;color:var(--ink-2);transition:color .2s;}
+  .nav-links a:hover{color:var(--ink);}
+  .btn{font-family:var(--sans);font-weight:500;cursor:pointer;border:none;display:inline-flex;align-items:center;justify-content:center;transition:transform .15s,box-shadow .2s,background .2s;}
+  .btn:active{transform:translateY(1px);}
+  .btn-accent{background:var(--accent);color:#fff;border-radius:10px;padding:10px 20px;font-size:14px;}
+  .btn-accent:hover{box-shadow:0 8px 22px rgba(17,105,90,.28);}
+
+  /* ---------- Hero ---------- */
+  .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:60px;align-items:center;padding:96px 0 80px;}
+  .hero-kicker{font-size:13px;font-weight:500;color:var(--accent);letter-spacing:.04em;margin-bottom:20px;}
+  .hero h1{font-family:var(--serif);font-weight:700;font-size:50px;line-height:1.18;color:var(--ink);margin-bottom:24px;}
+  .hero .sub{font-size:16px;color:var(--ink-2);line-height:1.72;margin-bottom:30px;}
+  .cta-row{display:flex;gap:14px;margin-bottom:24px;flex-wrap:wrap;}
+  .btn-lg{font-size:15px;padding:14px 26px;border-radius:10px;}
+  .btn-outline{background:var(--card);color:var(--ink);border:1px solid var(--line-2);}
+  .btn-outline:hover{border-color:var(--accent);}
+  .trust{font-family:var(--mono);font-size:13px;color:var(--ink-3);}
+
+  .hero-right{position:relative;display:flex;justify-content:center;}
+  .blob{position:absolute;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(17,105,90,.42),rgba(17,105,90,0) 70%);top:8px;right:6px;filter:blur(8px);z-index:0;}
+  .field-card{position:relative;z-index:1;width:100%;max-width:480px;background:var(--card);border:1px solid var(--line-2);border-radius:18px;padding:26px;box-shadow:0 24px 48px -16px rgba(27,26,23,.16);}
+  .fc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .fc-title-wrap{display:flex;align-items:center;gap:10px;}
+  .fc-title{font-family:var(--serif);font-weight:600;font-size:15px;color:var(--ink);}
+  .fc-badge{background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:500;padding:5px 10px;border-radius:20px;font-family:var(--sans);}
+  .frow{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px dashed var(--line);}
+  .frow:last-child{border-bottom:none;}
+  .frow .k{font-family:var(--mono);font-size:13px;color:var(--ink-3);}
+  .frow .v{font-size:14px;font-weight:500;color:var(--ink);text-align:right;max-width:62%;}
+
+  /* ---------- Section base ---------- */
+  section.block{padding:88px 0;}
+  .block.deep{background:var(--paper-deep);}
+  .sec-head{display:flex;align-items:center;gap:16px;margin-bottom:14px;}
+  .sec-num{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--accent);}
+  .sec-title{font-family:var(--serif);font-weight:700;font-size:30px;color:var(--ink);}
+  .sec-sub{font-size:15px;color:var(--ink-2);margin-bottom:42px;max-width:760px;}
+
+  /* ---------- Brand tiles ---------- */
+  .brand-tile{width:48px;height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex:0 0 48px;box-shadow:0 6px 16px -6px rgba(27,26,23,.35);}
+  .brand-tile svg{width:27px;height:27px;}
+  .brand-tile img{width:26px;height:26px;object-fit:contain;filter:brightness(0) invert(1);}
+  .bt-zotero{background:var(--c-zotero);}
+  .bt-obsidian{background:var(--c-obsidian);}
+  .bt-codex{background:var(--c-codex);}
+  .bt-skills{background:var(--c-skills);}
+
+  /* ---------- 01 Pain ---------- */
+  .pain-body{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  .pain-card{background:var(--card);border:1px solid var(--line-2);border-radius:12px;padding:20px 22px;display:flex;gap:14px;align-items:flex-start;}
+  .pain-card .pi{width:36px;height:36px;border-radius:10px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;flex:0 0 36px;}
+  .pain-card .pi svg{width:19px;height:19px;stroke:var(--accent);}
+  .pain-card h4{font-size:15.5px;font-weight:600;color:var(--ink);margin-bottom:5px;}
+  .pain-card p{font-size:13px;color:var(--ink-2);line-height:1.58;}
+
+  /* ---------- 02 Workflow pipeline ---------- */
+  .pipeline{display:flex;align-items:stretch;gap:0;margin-bottom:48px;flex-wrap:nowrap;}
+  .step{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:0 6px;}
+  .step-ic{width:54px;height:54px;border-radius:15px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;position:relative;}
+  .step-ic svg{width:27px;height:27px;stroke:var(--accent);fill:none;}
+  .step-n{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-family:var(--mono);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;}
+  .step h5{font-size:15px;font-weight:600;color:var(--ink);}
+  .step p{font-size:12.5px;color:var(--ink-2);line-height:1.5;}
+  .flow-arrow{display:flex;align-items:center;flex:0 0 22px;color:var(--accent);}
+  .flow-arrow svg{width:18px;height:18px;}
+
+  /* ---------- Evidence + status callout (V2 content, V1 visual) ---------- */
+  .workflow-foot{display:grid;grid-template-columns:1.1fr .9fr;gap:22px;align-items:stretch;}
+  .evidence-card{position:relative;border:1px solid rgba(17,105,90,.22);border-radius:20px;background:var(--card);box-shadow:0 18px 40px -18px rgba(27,26,23,.2);overflow:hidden;}
+  .evidence-card::before{position:absolute;inset:0 0 auto 0;height:5px;background:linear-gradient(90deg,var(--accent),#5DCAA5);content:"";}
+  .evidence-head{padding:22px 24px 16px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+  .evidence-head strong{display:block;font-family:var(--serif);font-size:16px;}
+  .evidence-head small{color:var(--ink-3);font-size:11px;}
+  .badge{display:inline-flex;align-items:center;min-height:24px;padding:2px 10px;border-radius:999px;font-size:10px;font-weight:700;white-space:nowrap;}
+  .badge-green{background:var(--accent-soft);color:var(--accent);}
+  .badge-blue{background:#E8EFF3;color:#375F7A;}
+  .evidence-list{padding:4px 24px 8px;}
+  .evidence-row{display:grid;grid-template-columns:96px 1fr;gap:14px;padding:13px 0;border-bottom:1px dashed var(--line);}
+  .evidence-row:last-child{border-bottom:0;}
+  .evidence-row dt{color:var(--ink-3);font:600 11px/1.55 var(--mono);}
+  .evidence-row dd{margin:0;font-size:13px;font-weight:500;}
+  .card-foot{padding:13px 24px;background:var(--accent-soft);color:var(--accent);display:flex;justify-content:space-between;gap:12px;font-size:11px;font-weight:650;}
+  .status-callout{background:var(--paper-deep);border:1px solid var(--line-2);border-radius:20px;padding:26px;display:flex;flex-direction:column;justify-content:center;gap:14px;}
+  .status-callout h4{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink);margin-bottom:2px;}
+  .status-chip{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-2);}
+  .status-dot{width:12px;height:12px;border-radius:50%;flex:0 0 12px;}
+  .dot-fact{background:var(--accent);}
+  .dot-sum{background:#5DCAA5;}
+  .dot-sug{background:var(--c-codex);}
+  .dot-na{background:#C9C2B2;}
+
+  /* ---- Evidence card: state-tagged concrete example ---- */
+  .ev-source{font:500 11px/1.5 var(--mono);color:var(--ink-3);padding:2px 24px 12px;}
+  .ev-states{padding:2px 24px 8px;}
+  .state-row{display:grid;grid-template-columns:74px 1fr;gap:12px;padding:11px 0;border-bottom:1px dashed var(--line);align-items:start;}
+  .state-row:last-of-type{border-bottom:0;}
+  .state-tag{display:inline-flex;align-items:center;justify-content:center;min-height:23px;padding:3px 8px;border-radius:8px;font-size:10.5px;font-weight:700;white-space:nowrap;}
+  .tag-fact{background:var(--accent-soft);color:var(--accent);}
+  .tag-sum{background:#E9F4EF;color:#2E8B6E;}
+  .tag-sug{background:#F3EEF8;color:var(--c-codex);}
+  .tag-na{background:#EFEBE2;color:#8A8270;}
+  .state-text{font-size:12.5px;line-height:1.56;color:var(--ink-2);}
+  .state-text b{color:var(--ink);font-weight:650;}
+  .state-text .src{color:var(--accent);font-weight:700;}
+  .ev-concl{padding:12px 24px;background:rgba(231,241,237,.72);color:#2c5247;font-size:12px;line-height:1.55;border-top:1px solid rgba(17,105,90,.15);}
+  .ev-concl b{color:var(--accent);}
+  /* ---- Status callout: significance of each state ---- */
+  .sig-row{display:flex;gap:11px;align-items:flex-start;font-size:12.5px;color:var(--ink-2);line-height:1.55;}
+  .sig-row .status-dot{margin-top:5px;}
+  .sig-row b{color:var(--ink);font-weight:650;}
+  .sig-row .sig-mean{color:var(--accent);font-weight:650;}
+
+  /* ---------- 03 Architecture map ---------- */
+  .archmap{display:flex;flex-direction:column;gap:0;margin-bottom:22px;}
+  .tier{display:grid;grid-template-columns:150px 1fr;gap:18px;align-items:stretch;background:var(--card);border:1px solid var(--line-2);border-radius:14px;padding:16px 20px;}
+  .tier.out{background:var(--accent-soft);border-color:rgba(17,105,90,.25);}
+  .tier-label{display:flex;flex-direction:column;justify-content:center;gap:3px;border-right:1px dashed var(--line);padding-right:16px;}
+  .tier-label .tn{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.06em;}
+  .tier-label .tt{font-family:var(--serif);font-weight:600;font-size:15px;color:var(--ink);}
+  .tier-items{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .tchip{display:flex;align-items:center;gap:8px;background:var(--paper-deep);border:1px solid var(--line);border-radius:10px;padding:9px 13px;font-size:13px;color:var(--ink);white-space:nowrap;}
+  .tchip .bt{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex:0 0 22px;}
+  .tchip .bt svg{width:14px;height:14px;}
+  .tchip .bt img{width:14px;height:14px;object-fit:contain;filter:brightness(0) invert(1);}
+  .tchip.deliver-chip{background:var(--card);border-color:rgba(17,105,90,.3);color:var(--accent);font-weight:500;}
+  .tier-conn{display:flex;align-items:center;justify-content:center;gap:9px;padding:7px 0;}
+  .tier-conn svg{width:15px;height:15px;color:var(--ink-3);}
+  .tier-conn .cl{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);}
+
+  .local-note{margin-top:18px;padding:18px 22px;border-left:3px solid var(--accent);background:rgba(231,241,237,.72);color:#35564c;font-size:13.5px;line-height:1.65;border-radius:0 12px 12px 0;}
+
+  .stack-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:34px;}
+  .stack-card{border:1px solid var(--line-2);border-radius:18px;background:var(--card);padding:22px;display:flex;flex-direction:column;gap:6px;}
+  .stack-card .st-ic{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;}
+  .stack-card .st-ic img{width:26px;height:26px;object-fit:contain;}
+  .stack-card .st-ic.glyph{background:var(--accent);color:#fff;font:800 22px/1 var(--sans);}
+  .stack-card h4{font-family:var(--serif);font-weight:600;font-size:16px;color:var(--ink);}
+  .stack-card p{font-size:13px;color:var(--ink-2);line-height:1.55;margin:0;}
+  .stack-card small{display:block;margin-top:8px;color:var(--ink-3);font-size:11px;font-family:var(--mono);}
+
+  /* ---------- 04 Capability hub (V2 贡献内容) ---------- */
+  .cap-hub{display:grid;grid-template-columns:290px 1fr;gap:22px;align-items:stretch;}
+  .cap-core{background:var(--accent);color:#fff;border-radius:18px;padding:28px;display:flex;flex-direction:column;justify-content:center;gap:12px;}
+  .cap-core .ck{font-family:var(--mono);font-size:11px;letter-spacing:.07em;color:rgba(255,255,255,.7);}
+  .cap-core .ct{font-family:var(--serif);font-weight:700;font-size:22px;line-height:1.3;}
+  .cap-core p{font-size:13.5px;color:rgba(255,255,255,.88);line-height:1.65;}
+  .cap-list{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .cap-mini{background:var(--card);border:1px solid var(--line-2);border-radius:13px;padding:16px 18px;display:flex;gap:12px;align-items:flex-start;}
+  .cap-mini .ci{width:36px;height:36px;border-radius:9px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;flex:0 0 36px;}
+  .cap-mini .ci svg{width:19px;height:19px;stroke:var(--accent);fill:none;}
+  .cap-mini h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:3px;}
+  .cap-mini h4 .chip{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--accent);margin-left:6px;letter-spacing:.04em;}
+  .cap-mini p{font-size:13px;color:var(--ink-2);line-height:1.5;}
+
+  /* ---------- 05 Proof gallery ---------- */
+  .proof-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:30px;}
+  .pm{background:var(--card);border:1px solid var(--line-2);border-radius:13px;padding:18px 20px;}
+  .pm .n{font-family:var(--serif);font-weight:700;font-size:30px;color:var(--accent);line-height:1.1;}
+  .pm .l{font-size:13px;color:var(--ink-2);margin-top:4px;}
+  .proof-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  .proof-grid.two{grid-template-columns:1fr 1fr;margin-top:18px;}
+  .shot{background:var(--card);border:1px solid var(--line-2);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;cursor:zoom-in;transition:transform .2s,box-shadow .2s;}
+  .shot:hover{transform:translateY(-3px);box-shadow:0 18px 34px -14px rgba(27,26,23,.24);}
+  .shot .thumb{width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top center;background:var(--paper-deep);border-bottom:1px solid var(--line);display:block;}
+  .shot.wide .thumb{aspect-ratio:16/8;}
+  .shot .cap{padding:14px 16px;}
+  .shot .cap .badge{font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:6px;display:inline-block;background:var(--accent-soft);padding:3px 9px;border-radius:20px;}
+  .shot .cap h4{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:5px;}
+  .shot .cap p{font-size:12.5px;color:var(--ink-2);line-height:1.58;}
+  .zoom-hint{font-family:var(--mono);font-size:12px;color:var(--ink-3);margin-top:16px;display:flex;align-items:center;gap:7px;}
+  .zoom-hint svg{width:14px;height:14px;stroke:var(--ink-3);fill:none;}
+
+  .case-note{margin-top:28px;display:grid;grid-template-columns:160px 1fr;gap:24px;padding:24px;border:1px solid rgba(154,92,19,.22);border-radius:18px;background:var(--amber-bg);}
+  .case-note strong{color:var(--amber);font:700 11px/1.5 var(--mono);}
+  .case-note h3{margin-bottom:8px;font-family:var(--serif);font-size:18px;color:var(--ink);}
+  .case-note p{margin-bottom:0;font-size:13px;color:#5b4630;line-height:1.62;}
+
+  /* ---------- 06 Delivery ---------- */
+  .delivery{display:grid;grid-template-columns:.82fr 1.18fr;gap:60px;align-items:center;}
+  .package{border:1px solid rgba(17,105,90,.22);border-radius:22px;background:var(--card);overflow:hidden;box-shadow:0 18px 44px -18px rgba(27,26,23,.22);}
+  .package-head{padding:24px;background:var(--accent);color:#fff;}
+  .package-head small{opacity:.7;font:600 10px/1 var(--mono);}
+  .package-head h3{margin:8px 0 0;font-family:var(--serif);font-size:22px;}
+  .package ul{margin:0;padding:20px 24px 24px 44px;color:var(--ink-2);font-size:13.5px;}
+  .package li+li{margin-top:8px;}
+
+  /* ---------- Final CTA ---------- */
+  .final-cta{text-align:center;padding:36px 0 8px;}
+  .final-cta h2{font-family:var(--serif);font-weight:700;font-size:34px;color:var(--ink);margin-bottom:12px;}
+  .final-cta p{font-size:15px;color:var(--ink-2);margin-bottom:22px;max-width:660px;margin-left:auto;margin-right:auto;}
+
+  /* ---------- Footer ---------- */
+  footer{background:var(--ink);color:var(--paper);padding:42px 0;text-align:center;}
+  .f-brand{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:14px;}
+  .f-brand .wm{font-family:var(--serif);font-weight:700;font-size:18px;color:var(--paper);}
+  .f-brand .tag{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.06em;color:#8A9B97;}
+  .f-copy{font-family:var(--mono);font-size:12px;color:#6B6860;}
+
+  /* ---------- Lightbox ---------- */
+  .lb{position:fixed;inset:0;background:rgba(20,18,15,.9);display:none;align-items:center;justify-content:center;z-index:100;padding:44px;cursor:zoom-out;}
+  .lb.open{display:flex;}
+  .lb img{max-width:94%;max-height:88%;border-radius:8px;box-shadow:0 24px 70px rgba(0,0,0,.55);}
+  .lb .lb-cap{position:absolute;bottom:22px;left:0;right:0;text-align:center;color:var(--paper);font-size:14px;padding:0 20px;}
+  .lb .lb-close{position:absolute;top:22px;right:26px;color:var(--paper);font-size:30px;line-height:1;cursor:pointer;opacity:.8;}
+  .lb .lb-close:hover{opacity:1;}
+
+  /* ---------- Reveal ---------- */
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s ease;}
+  .reveal.in{opacity:1;transform:none;}
+
+  /* ---------- Responsive ---------- */
+  @media(max-width:920px){
+    .wrap{padding:0 22px;}
+    .hero{grid-template-columns:1fr;gap:44px;padding:60px 0 56px;}
+    .hero h1{font-size:36px;}
+    .nav-links{display:none;}
+    .pain-body{grid-template-columns:1fr;}
+    .pipeline{flex-wrap:wrap;gap:18px 0;}
+    .step{flex:1 1 40%;}
+    .flow-arrow{display:none;}
+    .workflow-foot{grid-template-columns:1fr;}
+    .stack-grid{grid-template-columns:1fr 1fr;}
+    .cap-hub{grid-template-columns:1fr;}
+    .proof-metrics{grid-template-columns:1fr 1fr;}
+    .proof-grid{grid-template-columns:1fr;}
+    .proof-grid.two{grid-template-columns:1fr;}
+    .delivery{grid-template-columns:1fr;gap:30px;}
+    .sec-title{font-size:25px;}
+    .tier{grid-template-columns:1fr;gap:12px;}
+    .tier-label{border-right:none;border-bottom:1px dashed var(--line);padding-right:0;padding-bottom:10px;flex-direction:row;align-items:center;gap:10px;}
+  }
+  @media(max-width:600px){
+    .stack-grid{grid-template-columns:1fr;}
+    .cap-list{grid-template-columns:1fr;}
+    .proof-metrics{grid-template-columns:1fr;}
+    .case-note{grid-template-columns:1fr;gap:8px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== Header ===== -->
+<header>
+  <div class="wrap nav">
+    <div class="brand">
+      <span class="wm">ResearchFlow Agent</span>
+      <span class="tag">RESEARCH COPILOT · V2.5</span>
+    </div>
+    <nav class="nav-links">
+      <a href="#why">为什么需要</a>
+      <a href="#workflow">如何工作</a>
+      <a href="#stack">产品组成</a>
+      <a href="#contribution">我的贡献</a>
+      <a href="#proof">真实成果</a>
+    </nav>
+    <button class="btn btn-accent" onclick="document.getElementById('workflow').scrollIntoView()">查看方案</button>
+  </div>
+</header>
+
+<!-- ===== Hero ===== -->
+<section class="wrap hero">
+  <div class="hero-left">
+    <div class="hero-kicker">面向垂直研究方向的 AI 科研工作流</div>
+    <h1>一次精读，<br/>多处复用</h1>
+    <p class="sub">面向已经明确研究方向的科研人员，将论文中的事实、参数和文献依据，持续用于方法选择、实验设计与论文写作。</p>
+    <div class="cta-row">
+      <button class="btn btn-accent btn-lg" onclick="document.getElementById('workflow').scrollIntoView()">查看工作流程</button>
+      <button class="btn btn-outline btn-lg" onclick="document.getElementById('proof').scrollIntoView()">查看真实成果</button>
+    </div>
+    <div class="trust">167+ 篇文献持续管理 &nbsp;·&nbsp; 22 项结构化字段 &nbsp;·&nbsp; 5 类成果输出</div>
+  </div>
+  <div class="hero-right">
+    <div class="blob"></div>
+    <div class="field-card">
+      <div class="fc-head">
+        <div class="fc-title-wrap">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="4" stroke="#11695A" stroke-width="1.8"/><path d="M7 8h10M7 12h10M7 16h6" stroke="#11695A" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span class="fc-title">文献画像 · Literature Profile</span>
+        </div>
+        <span class="fc-badge">Agent 已补全</span>
+      </div>
+      <div class="frow"><span class="k">研究方向</span><span class="v">城市低空 UAV 路径规划</span></div>
+      <div class="frow"><span class="k">CFD 风场模拟</span><span class="v">雷诺平均 / LES 对比</span></div>
+      <div class="frow"><span class="k">代理模型</span><span class="v">PINN · FNO 替代 CFD</span></div>
+      <div class="frow"><span class="k">多目标路径规划</span><span class="v">NSGA-II 寻优</span></div>
+      <div class="frow"><span class="k">能耗模型</span><span class="v">风场耦合功率</span></div>
+      <div class="frow"><span class="k">风场数据来源</span><span class="v">实测 + 仿真</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 01 Pain ===== -->
+<section class="block deep" id="why">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">01</span><span class="sec-title">论文越读越多，研究依据仍要重找</span></div>
+    <p class="sec-sub">科研效率取决于论文信息能否被核对、关联，并继续进入后续研究。三个断点，正是 ResearchFlow 的出发点。</p>
+    <div class="pain-body">
+      <div class="pain-card reveal">
+        <span class="pi"><svg viewBox="0 0 24 24" fill="none"><path d="M12 8v5M12 16h.01" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke-width="1.8"/></svg></span>
+        <div><h4>科研幻觉：未报告信息被 AI 补写</h4><p>原文没有报告的参数可能进入回答，关键结论缺少可核对来源。</p></div>
+      </div>
+      <div class="pain-card reveal">
+        <span class="pi"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l8 4v5c0 4.5-3 8-8 10-4-2-8-5.5-8-10V7z" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <div><h4>信息安全：敏感研究资料需自主掌控</h4><p>论文、未发表想法和实验参数需要清晰的存储边界与长期管理方式。</p></div>
+      </div>
+      <div class="pain-card reveal">
+        <span class="pi"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h10" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke-width="1.8"/></svg></span>
+        <div><h4>成果断层：阅读结果难进实验与写作</h4><p>设计实验、撰写论文或准备汇报时，仍要重新找参数、核对出处。</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 02 Workflow ===== -->
+<section class="block" id="workflow">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">02</span><span class="sec-title">从论文全文，到可复用的研究依据</span></div>
+    <p class="sec-sub">ResearchFlow 将形成研究判断所需的文献依据整理清楚，并连接到具体研究任务。</p>
+
+    <div class="pipeline reveal">
+      <div class="step">
+        <div class="step-ic"><span class="step-n">1</span><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0012 3z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h5>明确研究问题</h5><p>读取方向、阶段与关注点，避免泛化摘要</p>
+      </div>
+      <div class="flow-arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="step">
+        <div class="step-ic"><span class="step-n">2</span><svg viewBox="0 0 24 24"><path d="M6 2h10a2 2 0 012 2v16a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z" stroke-width="1.8"/><path d="M9 7h6M9 11h6M9 15h4" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+        <h5>读取原文依据</h5><p>以全文为主，保留 Zotero 跳转链接</p>
+      </div>
+      <div class="flow-arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="step">
+        <div class="step-ic"><span class="step-n">3</span><svg viewBox="0 0 24 24"><path d="M3 5h18M3 10h18M3 15h18M3 20h18" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+        <h5>按领域结构整理</h5><p>22 字段：方法/数据/CFD/模型/规划</p>
+      </div>
+      <div class="flow-arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="step">
+        <div class="step-ic"><span class="step-n">4</span><svg viewBox="0 0 24 24"><path d="M12 3l2.5 6.5H21l-5.5 4 2 6.5L12 16l-5.5 4 2-6.5L3 9.5h6.5z" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+        <h5>区分事实与建议</h5><p>事实/概括/建议/未报告分开呈现</p>
+      </div>
+      <div class="flow-arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="step">
+        <div class="step-ic"><span class="step-n">5</span><svg viewBox="0 0 24 24"><path d="M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" stroke-width="1.8"/><path d="M8 12l3 3 5-6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h5>进入研究成果</h5><p>参数表/白皮书/周报/PPT/写作</p>
+      </div>
+    </div>
+
+    <div class="workflow-foot reveal">
+      <div class="evidence-card">
+        <div class="evidence-head">
+          <div>
+            <strong>路径规划算法选择</strong>
+            <small>Method decision · 产品示意</small>
+          </div>
+          <span class="badge badge-green">依据已分离</span>
+        </div>
+        <div class="ev-source">研究任务：为城市低空三维空域的路径规划选择候选算法 · 依据来自 Smith et al. (2023) §3</div>
+        <div class="ev-states">
+          <div class="state-row"><span class="state-tag tag-fact">论文事实</span><div class="state-text">原文报告 A* 在 2D 网格平均扩展 <b>1.2×10³</b> 节点；Theta* 在稀疏障碍下路径长度缩短 <b>8.6%</b>。　<span class="src">原文 §3.2 可回查 ↗</span></div></div>
+          <div class="state-row"><span class="state-tag tag-sum">内容概括</span><div class="state-text">论文将 Theta* 概括为 A* 的<b>任意角度扩展</b>，更适用于<b>低转弯代价</b>场景。</div></div>
+          <div class="state-row"><span class="state-tag tag-sug">研究建议</span><div class="state-text">Agent 建议优先在三维空域验证 Theta* 的<b>转弯惩罚项</b>（非原文结论）。</div></div>
+          <div class="state-row"><span class="state-tag tag-na">未报告</span><div class="state-text">论文<b>未给出</b>三维内存占用与最大网格尺寸 —— 标记缺口，<b>不进入结论</b>。</div></div>
+        </div>
+        <div class="ev-concl"><b>结论：</b>以 A* 作基线、Theta* 作对比，缺口列入补证清单，全程无补写。</div>
+      </div>
+      <div class="status-callout">
+        <h4>信息状态分离的意义</h4>
+        <div class="sig-row"><span class="status-dot dot-fact"></span><span><b>论文事实</b>　<span class="sig-mean">结论可回查</span>：每个参数都能追溯到 Zotero 原句。</span></div>
+        <div class="sig-row"><span class="status-dot dot-sum"></span><span><b>内容概括</b>　<span class="sig-mean">快速建立上下文</span>：用最少篇幅复述原文结构。</span></div>
+        <div class="sig-row"><span class="status-dot dot-sug"></span><span><b>研究建议</b>　<span class="sig-mean">标注来源不冒充</span>：明确是 Agent 延伸，非原文。</span></div>
+        <div class="sig-row"><span class="status-dot dot-na"></span><span><b>未报告信息</b>　<span class="sig-mean">缺口可见</span>：让 AI 不补写，缺什么一目了然。</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 03 Architecture / Stack ===== -->
+<section class="block deep" id="stack">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">03</span><span class="sec-title">ResearchFlow 产品架构</span></div>
+    <p class="sec-sub">本地知识资产、AI 任务执行与可复用 Skills 共同组成完整工作流；数据自上而下流经每一层。</p>
+    <div class="archmap reveal">
+      <div class="tier">
+        <div class="tier-label"><span class="tn">INPUT</span><span class="tt">数据输入层</span></div>
+        <div class="tier-items">
+          <span class="tchip">文献 PDF</span>
+          <span class="tchip">全文缓存</span>
+          <span class="tchip">用户关注点</span>
+          <span class="tchip">研究方向画像</span>
+        </div>
+      </div>
+      <div class="tier-conn"><span class="cl">导入</span><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M6 13l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="tier">
+        <div class="tier-label"><span class="tn">FOUNDATION</span><span class="tt">工具底座层</span></div>
+        <div class="tier-items">
+          <span class="tchip"><span class="bt bt-zotero"><svg viewBox="0 0 24 24"><path d="M21.231 2.462 7.18 20.923h14.564V24H2.256v-2.462L16.308 3.076H2.975V0h18.256v2.462z" fill="#fff"/></svg></span>Zotero</span>
+          <span class="tchip"><span class="bt bt-obsidian"><svg viewBox="0 0 24 24"><path d="M19.355 18.538a68.967 68.959 0 0 0 1.858-2.954.81.81 0 0 0-.062-.9c-.516-.685-1.504-2.075-2.042-3.362-.553-1.321-.636-3.375-.64-4.377a1.707 1.707 0 0 0-.358-1.05l-3.198-4.064a3.744 3.744 0 0 1-.076.543c-.106.503-.307 1.004-.536 1.5-.134.29-.29.6-.446.914l-.31.626c-.516 1.068-.997 2.227-1.132 3.59-.124 1.26.046 2.73.815 4.481.128.011.257.025.386.044a6.363 6.363 0 0 1 3.326 1.505c.916.79 1.744 1.922 2.415 3.5zM8.199 22.569c.073.012.146.02.22.02.78.024 2.095.092 3.16.29.87.16 2.593.64 4.01 1.055 1.083.316 2.198-.548 2.355-1.664.114-.814.33-1.735.725-2.58l-.01.005c-.67-1.87-1.522-3.078-2.416-3.849a5.295 5.295 0 0 0-2.778-1.257c-1.54-.216-2.952.19-3.84.45.532 2.218.368 4.829-1.425 7.531zM5.533 9.938c-.023.1-.056.197-.098.29L2.82 16.059a1.602 1.602 0 0 0 .313 1.772l4.116 4.24c2.103-3.101 1.796-6.02.836-8.3-.728-1.73-1.832-3.081-2.55-3.831zM9.32 14.01c.615-.183 1.606-.465 2.745-.534-.683-1.725-.848-3.233-.716-4.577.154-1.552.7-2.847 1.235-3.95.113-.235.223-.454.328-.664.149-.297.288-.577.419-.86.217-.47.379-.885.46-1.27.08-.38.08-.72-.014-1.043-.095-.325-.297-.675-.68-1.06a1.6 1.6 0 0 0-1.475.36l-4.95 4.452a1.602 1.602 0 0 0-.513.952l-.427 2.83c.672.59 2.328 2.316 3.335 4.711.09.21.175.43.253.653z" fill="#fff"/></svg></span>Obsidian</span>
+          <span class="tchip"><span class="bt bt-codex"><img src="assets/codex-icon.png" alt="Codex"></span>Codex</span>
+          <span class="tchip"><span class="bt bt-skills"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 5-9 5-9-5 9-5z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M3 12l9 5 9-5M3 16.5l9 5 9-5" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg></span>AGENTS/Skills</span>
+        </div>
+      </div>
+      <div class="tier-conn"><span class="cl">处理</span><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M6 13l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="tier">
+        <div class="tier-label"><span class="tn">CAPABILITY</span><span class="tt">Agent 能力层</span></div>
+        <div class="tier-items">
+          <span class="tchip">精读补全</span>
+          <span class="tchip">参数抽取</span>
+          <span class="tchip">方法启发</span>
+          <span class="tchip">质控门禁</span>
+        </div>
+      </div>
+      <div class="tier-conn"><span class="cl">产出</span><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M6 13l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="tier out">
+        <div class="tier-label"><span class="tn">OUTPUT</span><span class="tt">成果输出层</span></div>
+        <div class="tier-items">
+          <span class="tchip deliver-chip">文献画像</span>
+          <span class="tchip deliver-chip">参数速查表</span>
+          <span class="tchip deliver-chip">研究周报</span>
+          <span class="tchip deliver-chip">组会汇报 PPT</span>
+          <span class="tchip deliver-chip">方法白皮书</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="local-note"><strong>信息安全：</strong>Zotero 文献库与 Obsidian 知识库长期保存在本地，研究者自主掌握存储、备份与迁移；Codex 围绕当前任务读取指定材料，兼顾智能处理与资料边界。</div>
+
+    <div class="stack-grid reveal">
+      <div class="stack-card">
+        <div class="st-ic"><img src="assets/zotero-logo.svg" alt="Zotero"></div>
+        <h4>文献与原文</h4>
+        <p>管理元数据、PDF、分类和标注，为 Obsidian 引文返回原句位置提供锚点。</p>
+        <small>文献库可本地保存、自主管理</small>
+      </div>
+      <div class="stack-card">
+        <div class="st-ic"><img src="assets/obsidian-logo.svg" alt="Obsidian"></div>
+        <h4>长期研究资产</h4>
+        <p>以 Markdown 保存结构化笔记、参数汇总和研究关联，便于迁移与维护。</p>
+        <small>知识库保留在本地文件系统</small>
+      </div>
+      <div class="stack-card">
+        <div class="st-ic"><img src="assets/codex-icon.png" alt="Codex"></div>
+        <h4>任务理解与执行</h4>
+        <p>围绕当前研究任务读取指定材料，调用相应 Skills，完成多步骤处理。</p>
+        <small>处理范围由任务与文件约束</small>
+      </div>
+      <div class="stack-card">
+        <div class="st-ic glyph">▦</div>
+        <h4>成熟能力 + 领域方法</h4>
+        <p>复用检索、解析、综述和汇报能力，并用自研 Skills 固化领域方法。</p>
+        <small>通用能力复用，聚焦领域方法</small>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 04 Contribution (V2 文案 + V1 能力中枢) ===== -->
+<section class="block" id="contribution">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">04</span><span class="sec-title">从真实科研问题出发，把个人方法沉淀为可复用产品</span></div>
+    <p class="sec-sub">围绕科研可信性、长期知识沉淀与成果复用，完成领域数据结构、任务流程与交付形式设计。</p>
+    <div class="cap-hub reveal">
+      <div class="cap-core">
+        <span class="ck">AGENT CAPABILITY HUB</span>
+        <span class="ct">我的贡献：<br/>从断点到产品</span>
+        <p>识别科研可信性与成果复用的关键断点，将个人方法沉淀为结构化、可复用的科研产品能力。</p>
+      </div>
+      <div class="cap-list">
+        <div class="cap-mini">
+          <span class="ci"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" stroke-width="1.8"/><path d="M21 21l-4-4" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+          <div><h4>场景定义<span class="chip">PROBLEM</span></h4><p>识别 AI 输出缺少可靠依据、文献阅读难以支撑后续研究两个关键断点。</p></div>
+        </div>
+        <div class="cap-mini">
+          <span class="ci"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke-width="1.8"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke-width="1.8"/></svg></span>
+          <div><h4>领域结构<span class="chip">SCHEMA</span></h4><p>围绕城市低空 UAV 路径规划设计 22 项字段，覆盖 CFD、代理模型、规划与验证。</p></div>
+        </div>
+        <div class="cap-mini">
+          <span class="ci"><svg viewBox="0 0 24 24"><circle cx="5" cy="6" r="2.4" stroke-width="1.8"/><circle cx="19" cy="6" r="2.4" stroke-width="1.8"/><circle cx="12" cy="18" r="2.4" stroke-width="1.8"/><path d="M6.8 7.3l4 9M17.2 7.3l-4 9M7.4 6h9.2" stroke-width="1.6"/></svg></span>
+          <div><h4>工作流程<span class="chip">WORKFLOW</span></h4><p>将论文导入、信息整理、原文核对、研究关联和成果复用组织为稳定流程。</p></div>
+        </div>
+        <div class="cap-mini">
+          <span class="ci"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 11l2 2 4-4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <div><h4>真实验证<span class="chip">VALIDATION</span></h4><p>在个人研究中持续管理 167+ 篇文献，并形成五类可交付研究成果。</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 05 Proof ===== -->
+<section class="block deep" id="proof">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">05</span><span class="sec-title">已在城市低空 UAV 研究中持续运行</span></div>
+    <p class="sec-sub">从文献库到方法白皮书与组会汇报，展示输入、处理和实际去向。</p>
+
+    <div class="proof-metrics reveal">
+      <div class="pm"><div class="n">167+</div><div class="l">已管理文献（Zotero 真实库）</div></div>
+      <div class="pm"><div class="n">7</div><div class="l">大研究方向分类子库</div></div>
+      <div class="pm"><div class="n">22</div><div class="l">项结构化文献字段</div></div>
+      <div class="pm"><div class="n">5</div><div class="l">类成果产出（画像/参数/周报/PPT/白皮书）</div></div>
+    </div>
+
+    <div class="proof-grid reveal">
+      <figure class="shot" data-src="assets/zotero-lib.png" data-cap="Zotero 文献库全貌 —— 167+ 篇文献按研究方向分层归类">
+        <img class="thumb" src="assets/zotero-lib.png" alt="Zotero 文献库全貌截图" loading="lazy"/>
+        <figcaption class="cap"><span class="badge">INPUT</span><h4>结构化文献库</h4><p>167+ 篇文献按 CFD / 代理模型 / 路径规划 / 实测验证分层归类，统一 IF 分区与星级标记。</p></figcaption>
+      </figure>
+      <figure class="shot" data-src="assets/zotero-detail.png" data-cap="单篇文献 Agent 精读 —— 22 项 frontmatter 字段完整补全">
+        <img class="thumb" src="assets/zotero-detail.png" alt="单篇文献精读截图" loading="lazy"/>
+        <figcaption class="cap"><span class="badge">PROCESS</span><h4>单篇文献画像</h4><p>Obsidian 中完整补全的文献画像：title / method / cfd / model / plan / wind_source / relevance 等 22 项字段，含参数抽取、研究对齐与可引用原文。</p></figcaption>
+      </figure>
+      <figure class="shot" data-src="assets/obsidian-board.png" data-cap="Obsidian Kanban 总看板 —— 从阅读到交付的全链路管理">
+        <img class="thumb" src="assets/obsidian-board.png" alt="Obsidian 知识看板截图" loading="lazy"/>
+        <figcaption class="cap"><span class="badge">ASSET</span><h4>本地研究资产</h4><p>Kanban 板整合今日工作、研究推进、实验数据、工具管理与输出汇总，实现从文献到成果的全链路追踪。</p></figcaption>
+      </figure>
+    </div>
+
+    <div class="proof-grid two reveal">
+      <figure class="shot" data-src="assets/lit-report.png" data-cap="文献依据 Report —— 自动分级并标注证据 ID 与原文出处">
+        <img class="thumb" src="assets/lit-report.png" alt="文献依据 report 截图" loading="lazy"/>
+        <figcaption class="cap"><span class="badge">REUSE</span><h4>方法论证依据</h4><p>检索结果自动分为「直接支撑 / 数据来源 / 边界提醒」三级，每条带证据 ID 与原文出处，直接支撑开题报告的方法论论证。</p></figcaption>
+      </figure>
+      <figure class="shot" data-src="assets/ppt-overview.png" data-cap="组会汇报 PPT —— 研究框架与方法路径论证（2026.06）">
+        <img class="thumb" src="assets/ppt-overview.png" alt="组会汇报 PPT 截图" loading="lazy"/>
+        <figcaption class="cap"><span class="badge">OUTPUT</span><h4>研究汇报成果</h4><p>工作流最终产出的组会汇报幻灯片：研究框架、方法路径论证与阶段进展，可直接用于组会 / 开题展示。</p></figcaption>
+      </figure>
+    </div>
+
+    <div class="case-note reveal">
+      <strong>可信性如何进入实验设计</strong>
+      <div>
+        <h3>CFD 网格参数核查</h3>
+        <p>研究任务是为 CFD 实验设置寻找文献依据。整理参考论文时，ResearchFlow 提取局部加密区网格尺寸，并将高空区域最大网格尺寸标记为「论文未报告」。最终只采用可回查参数，信息缺口进入后续补证清单。</p>
+      </div>
+    </div>
+
+    <div class="zoom-hint"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" stroke-width="1.8"/><path d="M21 21l-4-4M11 8v6M8 11h6" stroke-width="1.8" stroke-linecap="round"/></svg>点击任意截图可放大查看细节</div>
+  </div>
+</section>
+
+<!-- ===== 06 Delivery ===== -->
+<section class="block" id="delivery">
+  <div class="wrap delivery">
+    <div>
+      <p class="hero-kicker">06 / DELIVERY</p>
+      <h2 class="sec-title" style="margin-bottom:14px;">从个人工作流，整理成可复用的科研 Skill</h2>
+      <p class="sub" style="margin-bottom:24px;">输入论文全文与研究关注点，输出结构化文献画像、关键参数、原文依据、适用位置与边界条件。</p>
+      <div class="cta-row">
+        <button class="btn btn-accent btn-lg" onclick="document.getElementById('workflow').scrollIntoView()">查看工作流程</button>
+        <a class="btn btn-outline btn-lg" href="https://github.com/zhiyu0814/researchflow-skill" target="_blank" rel="noopener">获取 Skill 包 ↗ GitHub</a>
+      </div>
+    </div>
+    <div class="package reveal">
+      <div class="package-head">
+        <small>REUSABLE SKILL PACKAGE</small>
+        <h3>ResearchFlow Literature-to-Method Skill</h3>
+      </div>
+      <ul>
+        <li>SKILL.md 与完整使用说明</li>
+        <li>通用字段模板与城市低空 UAV 示例模板</li>
+        <li>脱敏的输入输出示例</li>
+        <li>原文核对与信息状态说明</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Final CTA ===== -->
+<section class="block deep">
+  <div class="wrap final-cta reveal">
+    <h2>让每次文献阅读，都能继续支撑后续研究</h2>
+    <p>将论文中的事实、参数和原文依据整理为长期研究资产，供方法选择、实验设计与论文写作持续调用。</p>
+    <button class="btn btn-accent btn-lg" onclick="document.getElementById('proof').scrollIntoView()">查看真实成果</button>
+  </div>
+</section>
+
+<!-- ===== Footer ===== -->
+<footer>
+  <div class="wrap">
+    <div class="f-brand"><span class="wm">ResearchFlow Agent</span><span class="tag">RESEARCH COPILOT · V2.5</span></div>
+    <div class="f-copy">AI Product Design Case · Portfolio 2026 · Designed &amp; built by Zhiyu</div>
+  </div>
+</footer>
+
+<!-- ===== Lightbox ===== -->
+<div class="lb" id="lb">
+  <span class="lb-close">&times;</span>
+  <img id="lb-img" src="" alt="放大查看"/>
+  <div class="lb-cap" id="lb-cap"></div>
+</div>
+
+<script>
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  const lb = document.getElementById('lb');
+  const lbImg = document.getElementById('lb-img');
+  const lbCap = document.getElementById('lb-cap');
+  document.querySelectorAll('.shot').forEach(fig => {
+    fig.addEventListener('click', () => {
+      lbImg.src = fig.dataset.src;
+      lbCap.textContent = fig.dataset.cap || '';
+      lb.classList.add('open');
+    });
+  });
+  function closeLb(){ lb.classList.remove('open'); lbImg.src=''; }
+  lb.addEventListener('click', closeLb);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
+</script>
+</body>
+</html>
