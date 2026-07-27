@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ResearchFlow Agent｜一次精读，多处复用</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Serif+SC:wght@600;700;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<meta name="description" content="ResearchFlow Agent：面向已明确研究方向的科研人员，将论文全文与关注点，整理为结构化、可回查、可复用的研究资产。一次精读，多处复用。" />
+<style>
+  :root{
+    --blue:#2F6BFF;
+    --blue-d:#1B4FE0;
+    --cyan:#15C8D6;
+    --ink:#0E1726;
+    --ink-2:#475569;
+    --ink-3:#94A3B8;
+    --line:#E4ECF5;
+    --bg:#FFFFFF;
+    --bg-soft:#F4F8FD;
+    --bg-deep:#EEF4FB;
+    --card:#FFFFFF;
+    --grad:linear-gradient(120deg,#2F6BFF 0%,#15C8D6 100%);
+    --grad-soft:linear-gradient(120deg,rgba(47,107,255,.12),rgba(21,200,214,.12));
+    --sans:"Noto Sans SC","Space Grotesk",system-ui,sans-serif;
+    --serif:"Noto Serif SC",serif;
+    --mono:"Space Grotesk",ui-monospace,monospace;
+    --maxw:1180px;
+    --shadow:0 22px 50px -22px rgba(20,50,110,.28);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:var(--sans);background:var(--bg);color:var(--ink);line-height:1.7;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 32px;}
+  a{color:inherit;text-decoration:none;}
+  .grad-text{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .mono{font-family:var(--mono);}
+
+  /* ---------- Scroll progress ---------- */
+  .progress{position:fixed;top:0;left:0;height:3px;width:0;background:var(--grad);z-index:100;box-shadow:0 0 12px rgba(47,107,255,.6);transition:width .08s linear;}
+
+  /* ---------- Header ---------- */
+  header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.82);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:70px;}
+  .brand{display:flex;align-items:center;gap:11px;}
+  .brand .logo{width:34px;height:34px;border-radius:10px;background:var(--grad);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px -6px rgba(47,107,255,.55);}
+  .brand .logo svg{width:20px;height:20px;}
+  .brand .wm{font-family:var(--serif);font-weight:700;font-size:18px;letter-spacing:.01em;}
+  .brand .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--blue);text-transform:uppercase;}
+  .nav-links{display:flex;align-items:center;gap:30px;}
+  .nav-links a{font-size:14px;color:var(--ink-2);transition:color .2s;position:relative;padding:4px 0;}
+  .nav-links a::after{content:"";position:absolute;left:0;bottom:0;height:2px;width:0;background:var(--grad);transition:width .25s;}
+  .nav-links a:hover{color:var(--ink);}
+  .nav-links a:hover::after{width:100%;}
+  .btn{font-family:var(--sans);font-weight:500;cursor:pointer;border:none;display:inline-flex;align-items:center;justify-content:center;transition:transform .15s,box-shadow .25s,background .25s;}
+  .btn:active{transform:translateY(1px);}
+  .btn-accent{background:var(--grad);color:#fff;border-radius:11px;padding:10px 20px;font-size:14px;box-shadow:0 12px 26px -10px rgba(47,107,255,.6);}
+  .btn-accent:hover{box-shadow:0 16px 34px -10px rgba(47,107,255,.7);}
+  .btn-ghost{background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:11px;padding:9px 18px;font-size:14px;}
+  .btn-ghost:hover{border-color:var(--blue);color:var(--blue);}
+  .btn-lg{font-size:15px;padding:14px 28px;border-radius:12px;}
+
+  /* ---------- Hero ---------- */
+  .hero{position:relative;overflow:hidden;padding:84px 0 72px;background:
+      radial-gradient(900px 480px at 78% -8%,rgba(21,200,214,.16),transparent 60%),
+      radial-gradient(820px 460px at 8% 4%,rgba(47,107,255,.14),transparent 55%);}
+  .aurora{position:absolute;border-radius:50%;filter:blur(60px);opacity:.5;pointer-events:none;z-index:0;}
+  .aurora.a1{width:460px;height:460px;background:radial-gradient(circle,rgba(47,107,255,.55),transparent 70%);top:-120px;right:6%;animation:drift1 14s ease-in-out infinite;}
+  .aurora.a2{width:380px;height:380px;background:radial-gradient(circle,rgba(21,200,214,.5),transparent 70%);bottom:-140px;left:2%;animation:drift2 18s ease-in-out infinite;}
+  @keyframes drift1{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(-50px,40px) scale(1.12);}}
+  @keyframes drift2{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(60px,-30px) scale(1.1);}}
+  .hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:1.02fr .98fr;gap:56px;align-items:center;}
+  .kicker{display:inline-flex;align-items:center;gap:9px;font-size:13px;font-weight:500;color:var(--blue);background:var(--bg-soft);border:1px solid var(--line);padding:7px 15px;border-radius:30px;margin-bottom:22px;}
+  .kicker .dot{width:7px;height:7px;border-radius:50%;background:var(--grad);animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.5);opacity:.5;}}
+  .hero h1{font-family:var(--serif);font-weight:900;font-size:52px;line-height:1.16;letter-spacing:-.01em;margin-bottom:22px;}
+  .hero .sub{font-size:16.5px;color:var(--ink-2);line-height:1.78;margin-bottom:18px;max-width:540px;}
+  .rot{display:inline-block;font-size:14px;font-weight:600;color:var(--blue-d);background:var(--grad-soft);border:1px solid rgba(47,107,255,.2);padding:7px 15px;border-radius:30px;margin-bottom:26px;transition:opacity .35s,transform .35s;will-change:opacity,transform;}
+  .cta-row{display:flex;gap:14px;margin-bottom:26px;flex-wrap:wrap;}
+  .trust{font-family:var(--mono);font-size:12.5px;color:var(--ink-3);letter-spacing:.02em;}
+  .trust b{color:var(--ink-2);font-weight:600;}
+
+  .hero-card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px 26px;box-shadow:var(--shadow);animation:float 6s ease-in-out infinite;will-change:transform;}
+  @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+  .hc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .hc-title{font-family:var(--serif);font-weight:700;font-size:15px;}
+  .hc-badge{background:var(--grad-soft);color:var(--blue-d);font-size:11px;font-weight:700;padding:5px 11px;border-radius:20px;border:1px solid rgba(47,107,255,.18);}
+  .frow{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px dashed var(--line);}
+  .frow:last-child{border-bottom:none;}
+  .frow .k{font-family:var(--mono);font-size:12.5px;color:var(--ink-3);}
+  .frow .v{font-size:13.5px;font-weight:600;color:var(--ink);text-align:right;max-width:60%;}
+  .state-pill{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;}
+  .st-fact{background:#E6F6EC;color:#1E8E4E;}
+  .st-gap{background:#FDEAEA;color:#C0392B;}
+  .hc-foot{margin-top:16px;font-size:12px;color:var(--ink-3);display:flex;align-items:center;gap:8px;}
+  .hc-foot svg{width:15px;height:15px;stroke:var(--blue);}
+
+  /* ---------- Section base ---------- */
+  section.block{padding:86px 0;}
+  .block.soft{background:var(--bg-soft);}
+  .sec-head{margin-bottom:12px;}
+  .sec-num{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--blue);letter-spacing:.1em;}
+  .sec-title{font-family:var(--serif);font-weight:900;font-size:33px;line-height:1.28;margin-top:8px;letter-spacing:-.01em;}
+  .sec-sub{font-size:15.5px;color:var(--ink-2);margin:14px 0 46px;max-width:720px;}
+
+  /* ---------- Steps ---------- */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:30px 28px;position:relative;transition:transform .25s,box-shadow .25s;overflow:hidden;}
+  .step::before{content:"";position:absolute;inset:0;background:var(--grad);opacity:0;transition:opacity .3s;}
+  .step:hover{transform:translateY(-6px);box-shadow:var(--shadow);}
+  .step:hover::before{opacity:.04;}
+  .step-order{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.18em;color:var(--blue);text-transform:uppercase;margin-bottom:18px;position:relative;}
+  .step-ic{width:52px;height:52px;border-radius:14px;background:var(--grad-soft);display:flex;align-items:center;justify-content:center;margin-bottom:18px;border:1px solid rgba(47,107,255,.18);position:relative;transition:transform .3s;}
+  .step:hover .step-ic{transform:scale(1.08) rotate(-4deg);}
+  .step-ic svg{width:26px;height:26px;stroke:var(--blue);fill:none;stroke-width:1.7;}
+  .step h3{font-family:var(--serif);font-weight:700;font-size:21px;margin-bottom:10px;position:relative;}
+  .step p{font-size:14px;color:var(--ink-2);line-height:1.72;position:relative;}
+
+  /* ---------- Feature grid ---------- */
+  .feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;}
+  .feat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 28px;transition:transform .2s,box-shadow .25s,border-color .25s;transform-style:preserve-3d;will-change:transform;}
+  .feat:hover{box-shadow:var(--shadow);border-color:rgba(47,107,255,.35);}
+  .feat-ic{width:46px;height:46px;border-radius:13px;background:var(--grad);display:flex;align-items:center;justify-content:center;margin-bottom:16px;box-shadow:0 10px 22px -10px rgba(47,107,255,.6);transition:transform .3s;}
+  .feat:hover .feat-ic{transform:translateZ(18px) scale(1.06);}
+  .feat h4{font-size:17px;font-weight:700;margin-bottom:8px;}
+  .feat p{font-size:13.5px;color:var(--ink-2);line-height:1.7;}
+
+  /* ---------- Capability list ---------- */
+  .cap-wrap{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .cap{display:flex;gap:16px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;transition:transform .25s,box-shadow .25s,border-color .25s;}
+  .cap:hover{transform:translateY(-4px);box-shadow:var(--shadow);border-color:rgba(47,107,255,.3);}
+  .cap .num{font-family:var(--mono);font-weight:700;font-size:13px;color:var(--blue);background:var(--grad-soft);border:1px solid rgba(47,107,255,.18);border-radius:9px;padding:6px 10px;flex:0 0 auto;}
+  .cap h4{font-size:15px;font-weight:700;margin-bottom:4px;}
+  .cap p{font-size:13px;color:var(--ink-2);line-height:1.62;}
+
+  /* ---------- Interactive info-state demo ---------- */
+  .ist{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:30px 32px;box-shadow:var(--shadow);max-width:760px;margin:0 auto;}
+  .ist-head{display:flex;align-items:center;gap:10px;margin-bottom:20px;font-weight:600;font-size:15px;}
+  .ist-dot{width:9px;height:9px;border-radius:50%;background:var(--grad);animation:pulse 2s infinite;}
+  .ist-tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px;}
+  .ist-tab{font-family:var(--sans);font-size:13.5px;font-weight:600;cursor:pointer;border:1px solid var(--line);background:var(--bg-soft);color:var(--ink-2);padding:9px 16px;border-radius:30px;transition:all .2s;}
+  .ist-tab:hover{border-color:var(--blue);color:var(--blue);}
+  .ist-tab.active{background:var(--grad);color:#fff;border-color:transparent;box-shadow:0 8px 18px -8px rgba(47,107,255,.6);}
+  .ist-body{position:relative;min-height:120px;}
+  .ist-panel{position:absolute;inset:0;opacity:0;transform:translateY(10px);pointer-events:none;transition:opacity .3s,transform .3s;display:flex;flex-direction:column;gap:12px;}
+  .ist-panel.active{opacity:1;transform:none;pointer-events:auto;position:relative;}
+  .ist-panel p{font-size:14px;color:var(--ink-2);line-height:1.7;}
+  .ist-code{font-family:var(--mono);font-size:12.5px;background:var(--bg-soft);border:1px solid var(--line);border-radius:10px;padding:10px 14px;color:var(--ink);}
+  .ist-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+
+  /* ---------- Stats band ---------- */
+  .stats{background:var(--grad);border-radius:24px;padding:50px 40px;display:grid;grid-template-columns:repeat(4,1fr);gap:24px;color:#fff;}
+  .stat{text-align:center;opacity:0;transform:scale(.85);transition:opacity .6s,transform .6s;}
+  .stat.in{opacity:1;transform:none;}
+  .stat .big{font-family:var(--serif);font-weight:900;font-size:46px;line-height:1;letter-spacing:-.01em;}
+  .stat .lbl{font-size:13.5px;margin-top:10px;opacity:.92;}
+
+  /* ---------- Pipeline ---------- */
+  .pipe{display:flex;align-items:stretch;gap:0;flex-wrap:nowrap;margin-bottom:14px;}
+  .pipe-step{flex:1;min-width:0;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;transition:transform .25s,box-shadow .25s;}
+  .pipe-step:hover{transform:translateY(-5px);box-shadow:var(--shadow);}
+  .pipe-ic{width:48px;height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--mono);font-weight:700;font-size:15px;}
+  .pipe-logo{width:27px;height:27px;display:block;}
+  .p-zotero{background:#CC2936;}
+  .p-obsidian{background:#7C3AED;}
+  .p-skill{background:var(--grad);}
+  .p-down{background:#0E1726;}
+  .pipe-step h5{font-size:15px;font-weight:700;}
+  .pipe-step p{font-size:12.5px;color:var(--ink-2);line-height:1.55;}
+  .pipe-arrow{display:flex;align-items:center;flex:0 0 34px;color:var(--blue);}
+  .pipe-arrow svg{width:22px;height:22px;stroke-dasharray:6 6;animation:flow 1s linear infinite;}
+  @keyframes flow{to{stroke-dashoffset:-24;}}
+
+  /* ---------- Testimonials ---------- */
+  .quotes{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
+  .quote{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:28px 26px;display:flex;flex-direction:column;gap:18px;transition:transform .25s,box-shadow .25s;}
+  .quote:hover{transform:translateY(-5px);box-shadow:var(--shadow);}
+  .quote p{font-size:14px;color:var(--ink);line-height:1.78;flex:1;}
+  .q-who{display:flex;align-items:center;gap:12px;}
+  .q-av{width:40px;height:40px;border-radius:50%;background:var(--grad-soft);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;color:var(--blue-d);border:1px solid rgba(47,107,255,.2);}
+  .q-who .nm{font-size:14px;font-weight:700;}
+  .q-who .rl{font-size:12px;color:var(--ink-3);}
+
+  /* ---------- Final CTA ---------- */
+  .final{background:
+      radial-gradient(700px 360px at 80% 0%,rgba(21,200,214,.18),transparent 60%),
+      radial-gradient(700px 360px at 10% 100%,rgba(47,107,255,.18),transparent 60%),
+      var(--bg-deep);border-radius:28px;padding:64px 48px;text-align:center;}
+  .final h2{font-family:var(--serif);font-weight:900;font-size:36px;line-height:1.3;margin-bottom:18px;}
+  .final p{font-size:16px;color:var(--ink-2);max-width:640px;margin:0 auto 32px;line-height:1.8;}
+  .final .cta-row{justify-content:center;}
+
+  /* ---------- Footer ---------- */
+  footer{border-top:1px solid var(--line);padding:40px 0;margin-top:8px;}
+  .foot{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;}
+  .foot .left{font-size:13px;color:var(--ink-3);}
+  .foot .links{display:flex;gap:22px;}
+  .foot .links a{font-size:13px;color:var(--ink-2);}
+  .foot .links a:hover{color:var(--blue);}
+
+  /* ---------- Back to top ---------- */
+  .btt{position:fixed;right:26px;bottom:26px;width:46px;height:46px;border-radius:14px;background:var(--grad);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 26px -10px rgba(47,107,255,.6);opacity:0;transform:translateY(20px) scale(.8);pointer-events:none;transition:opacity .3s,transform .3s;z-index:90;}
+  .btt.show{opacity:1;transform:none;pointer-events:auto;}
+  .btt:hover{box-shadow:0 16px 32px -10px rgba(47,107,255,.75);}
+  .btt svg{width:22px;height:22px;}
+
+  /* ---------- Feature demo (interactive artifacts) ---------- */
+  .fdemo{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px 28px;box-shadow:var(--shadow);}
+  .fdemo-nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px;}
+  .fd-tab{font-family:var(--sans);font-size:13.5px;font-weight:600;cursor:pointer;border:1px solid var(--line);background:var(--bg-soft);color:var(--ink-2);padding:10px 16px;border-radius:12px;transition:all .2s;display:inline-flex;align-items:center;gap:8px;}
+  .fd-tab:hover{border-color:var(--blue);color:var(--blue);}
+  .fd-tab.active{background:var(--grad);color:#fff;border-color:transparent;box-shadow:0 8px 18px -8px rgba(47,107,255,.6);}
+  .fd-tab .fdn{font-family:var(--mono);font-size:11px;opacity:.85;}
+  .fdemo-stage{position:relative;}
+  .fpanel{display:none;}
+  .fpanel.active{display:block;animation:fadeUp .4s ease;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+  .art-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px;}
+  .art-table th{text-align:left;font-weight:700;color:var(--ink);background:var(--bg-soft);padding:11px 14px;border:1px solid var(--line);font-size:12.5px;}
+  .art-table td{padding:11px 14px;border:1px solid var(--line);color:var(--ink-2);vertical-align:top;line-height:1.6;}
+  .art-table tbody tr{transition:background .2s;}
+  .art-table tbody tr:hover{background:rgba(47,107,255,.04);}
+  .art-table b{color:var(--ink);}
+  .muted{color:var(--ink-3);font-size:12px;}
+  .art-note{font-size:13px;color:var(--ink-2);background:var(--grad-soft);border:1px solid rgba(47,107,255,.18);border-radius:10px;padding:12px 16px;line-height:1.65;}
+  .pill{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;display:inline-block;}
+  .pill.ok{background:#E6F6EC;color:#1E8E4E;}
+  .pill.warn{background:#FFF3E0;color:#B26A00;}
+  .pill.info{background:#E7F0FF;color:#2F6BFF;}
+  .pill.gap{background:#FDEAEA;color:#C0392B;}
+  .gap-list{list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:14px;}
+  .gap-list li{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:13.5px;color:var(--ink);background:var(--bg-soft);border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
+  .gap-act{margin-left:auto;font-size:12px;color:var(--ink-3);font-weight:600;}
+
+  /* ---------- PPT demo (Bohr-style smooth player) ---------- */
+  .ppt-demo{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:0;box-shadow:var(--shadow);overflow:hidden;}
+  .ppt-main{display:grid;grid-template-columns:238px 1fr;min-height:520px;}
+  
+  /* Sidebar (Obsidian/Bohr-style file list) */
+  .ppt-sidebar{background:#FAFBFC;border-right:1px solid var(--line);display:flex;flex-direction:column;padding:18px 14px;gap:10px;}
+  .ppt-sb-head{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--ink-2);padding-bottom:8px;border-bottom:1px solid var(--line);}
+  .ppt-sb-dot{width:8px;height:8px;border-radius:50%;background:var(--grad);animation:pulse 2s infinite;flex-shrink:0;}
+  .ppt-plan{display:flex;flex-direction:column;gap:6px;flex:1;overflow:auto;padding-right:2px;}
+  .plan-item{display:flex;gap:9px;align-items:flex-start;padding:10px 12px;border:1px solid transparent;border-radius:10px;cursor:pointer;font-size:12px;line-height:1.5;color:var(--ink-2);transition:all .25s ease;background:transparent;}
+  .plan-item:hover{background:#fff;border-color:var(--line);color:var(--ink);box-shadow:0 2px 8px rgba(20,50,110,.08);}
+  .plan-item.active{background:var(--grad-soft);color:var(--ink);font-weight:600;border-color:rgba(47,107,255,.25);box-shadow:0 4px 14px rgba(47,107,255,.12);}
+  .plan-num{font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--blue);flex:0 0 auto;padding-top:1px;}
+  .plan-item.active .plan-num{color:var(--blue-d);}
+
+  /* Stage area — fixed 1280×720 slide canvas, scaled UNIFORMLY so every slide
+     (cover + content) is always identical in size, like a real PPT放映 */
+  .ppt-stage-wrap{display:flex;flex-direction:column;gap:12px;padding:20px 22px 16px;overflow:hidden;}
+  .ppt-stage{position:relative;background:linear-gradient(180deg,#fff 0%,#F8FBFF 100%);border:9px solid #0d1b33;border-radius:18px;aspect-ratio:16/9;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;box-shadow:0 28px 70px -26px rgba(8,18,40,.6), inset 0 16px 34px -20px rgba(150,190,255,.45);}
+  .ppt-accent-bar{position:absolute;top:0;left:0;right:0;height:4px;background:var(--grad);opacity:.9;z-index:5;}
+  .ppt-canvas{position:relative;width:1280px;height:720px;flex:0 0 auto;transform-origin:center center;transform:scale(1);}
+  /* 两层叠加走马灯：进出层同时平移，全程不露白 */
+  .ppt-layer{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden;transition:transform .4s cubic-bezier(.4,0,.2,1);will-change:transform;}
+  /* 放映指示灯（纯图标，呼应“放映机 / 正在放映”） */
+  .ppt-rec{position:absolute;top:15px;right:17px;z-index:7;display:flex;align-items:center;justify-content:center;width:13px;height:13px;pointer-events:none;}
+  .ppt-rec-dot{width:11px;height:11px;border-radius:50%;background:#ff4d4f;animation:recPulse 1.8s infinite;}
+  @keyframes recPulse{0%{box-shadow:0 0 0 0 rgba(255,77,79,.55);}70%{box-shadow:0 0 0 9px rgba(255,77,79,0);}100%{box-shadow:0 0 0 0 rgba(255,77,79,0);}}
+
+  /* Cover slide (dark) — fills the same 1280×720 canvas */
+  .ppt-layer.is-cover{align-items:center;justify-content:center;text-align:center;background:radial-gradient(125% 120% at 50% 0%,#1A3A66 0%,#0E2447 55%,#08162C 100%);color:#fff;padding:80px;}
+  .ppt-layer.is-content{padding:56px 72px 64px;background:linear-gradient(180deg,#fff 0%,#F8FBFF 100%);}
+  .ppt-cover-kicker{font-family:var(--mono);font-size:18px;letter-spacing:.18em;color:#5FA8FF;text-transform:uppercase;margin-bottom:26px;}
+  .ppt-cover-title{font-family:var(--serif);font-weight:900;font-size:46px;line-height:1.22;color:#fff;margin-bottom:22px;text-shadow:0 2px 22px rgba(0,0,0,.35);max-width:1000px;}
+  .ppt-cover-meta{font-size:22px;color:#AEBEDA;margin-bottom:6px;line-height:1.7;max-width:980px;}
+  .ppt-cover-rule{width:60px;height:3px;border-radius:2px;background:var(--grad);margin:26px auto 0;}
+  .ppt-cover-info{margin-top:34px;display:flex;gap:28px;flex-wrap:wrap;justify-content:center;font-size:20px;color:#C9D6EE;}
+  .ppt-cover-info span{position:relative;padding:0 6px;white-space:nowrap;}
+  .ppt-cover-info span+span::before{content:"";position:absolute;left:-14px;top:50%;transform:translateY(-50%);width:1px;height:18px;background:rgba(255,255,255,.22);}
+
+  /* Content slides — fill the same 1280×720 canvas (re-laid out, not shrunk) */
+  .ppt-pageno{font-family:var(--mono);font-size:16px;color:var(--ink-3);letter-spacing:.05em;margin-bottom:16px;}
+  .ppt-title{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.3;color:#fff;background:linear-gradient(90deg,#0E2447 0%,#1A3A66 58%,#2F6BFF 100%);padding:13px 22px;border-radius:12px;margin-bottom:20px;box-shadow:0 8px 20px -10px rgba(20,50,110,.5);}
+  .ppt-meta{font-size:18px;color:var(--blue-d);margin-bottom:16px;font-weight:500;}
+  .ppt-body{display:flex;gap:36px;flex:1;min-height:0;}
+  .ppt-col-text{flex:1.05;min-width:0;display:flex;flex-direction:column;justify-content:center;}
+  .ppt-col-vis{flex:.95;min-width:0;display:flex;align-items:center;justify-content:center;}
+  .ppt-bullets{list-style:none;display:flex;flex-direction:column;gap:16px;}
+  .ppt-bullets li{font-size:18px;color:var(--ink-2);line-height:1.6;padding-left:24px;position:relative;opacity:0;transform:translateY(6px);}
+  .ppt-bullets li.show{opacity:1;transform:none;transition:opacity .45s ease,transform .45s ease;}
+  .ppt-bullets li::before{content:"";position:absolute;left:0;top:9px;width:9px;height:9px;border-radius:2px;background:var(--grad);flex-shrink:0;}
+  
+  /* Visual / chart area */
+  .ppt-vis{width:100%;max-width:100%;background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:0 4px 14px -8px rgba(20,50,110,.15);overflow:hidden;}
+  .ppt-vis svg{width:100%;height:auto;display:block;}
+
+  /* Rich content tables inside slides */
+  .ppt-table-wrap{width:100%;overflow-x:auto;}
+  .ppt-table{width:100%;border-collapse:collapse;font-size:15px;margin-top:14px;}
+  .ppt-table th{text-align:left;font-weight:700;color:var(--ink);background:var(--bg-soft);padding:12px 16px;border:1px solid var(--line);white-space:nowrap;font-size:15px;}
+  .ppt-table td{padding:11px 16px;border:1px solid var(--line);color:var(--ink-2);vertical-align:top;line-height:1.55;font-size:15px;}
+  .ppt-table tbody tr:hover{background:rgba(47,107,255,.03);}
+  .ppt-table.sm th,.ppt-table.sm td{padding:10px 14px;font-size:14px;line-height:1.5;}
+  .ppt-table.sm th{font-size:14px;white-space:nowrap;}
+  .ppt-col-vis.full{flex:1 1 auto;}
+  .ppt-tag{display:inline-block;font-size:14px;font-weight:600;padding:3px 12px;border-radius:12px;white-space:nowrap;}
+  .ppt-tag.green{background:#E6F6EC;color:#1E8E4E;}
+  .ppt-tag.red{background:#FDEAEA;color:#C0392B;}
+  .ppt-tag.blue{background:#E7F0FF;color:#2F6BFF;}
+  .ppt-tag.orange{background:#FFF3E0;color:#B26A00;}
+
+  /* Notes */
+  .ppt-note{background:linear-gradient(135deg,#FAFBFC,#F4F8FD);border:1px solid var(--line);border-left:3.5px solid var(--blue);border-radius:10px;padding:11px 15px;font-size:12.5px;color:var(--ink-2);display:flex;gap:10px;line-height:1.65;}
+  .ppt-note b{color:var(--blue-d);font-weight:700;flex:0 0 auto;}
+
+  /* Controls */
+  .ppt-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:4px;}
+  .ppt-nav{display:flex;align-items:center;gap:8px;}
+  .ppt-btn{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-2);font-size:15px;transition:all .2s ease;}
+  .ppt-btn:hover{border-color:var(--blue);color:var(--blue);transform:scale(1.05);}
+  .ppt-btn.play{background:var(--grad);color:#fff;border-color:transparent;}
+  .ppt-btn.play:hover{box-shadow:0 6px 16px -6px rgba(47,107,255,.55);}
+  .ppt-page-idx{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);margin-left:6px;}
+  .ppt-dots{display:flex;gap:7px;}
+  .ppt-dot{width:9px;height:9px;border-radius:50%;background:var(--line);cursor:pointer;transition:all .3s ease;border:none;}
+  .ppt-dot:hover{background:var(--ink-3);}
+  .ppt-dot.active{background:var(--blue);width:24px;border-radius:5px;}
+
+  @media(max-width:900px){ .ppt-main{grid-template-columns:1fr;} .ppt-sidebar{display:none;} .ppt-body{flex-direction:column;} }
+
+  /* ---------- Reveal anim + stagger ---------- */
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease;}
+  .reveal.in{opacity:1;transform:none;}
+  .reveal.d1{transition-delay:.08s;} .reveal.d2{transition-delay:.16s;}
+  .reveal.d3{transition-delay:.24s;} .reveal.d4{transition-delay:.32s;}
+  .reveal.d5{transition-delay:.4s;} .reveal.d6{transition-delay:.48s;}
+
+  @media(max-width:980px){
+    .hero-grid{grid-template-columns:1fr;gap:38px;}
+    .hero h1{font-size:42px;}
+    .steps,.feat-grid,.cap-wrap,.quotes{grid-template-columns:1fr;}
+    .stats{grid-template-columns:repeat(2,1fr);}
+    .pipe{flex-wrap:wrap;gap:12px;}
+    .pipe-step{flex:1 1 44%;}
+    .pipe-arrow{flex-basis:100%;justify-content:center;transform:rotate(90deg);}
+    .nav-links{display:none;}
+    .ist-panel{position:relative;}
+  }
+  @media(max-width:560px){
+    .wrap{padding:0 20px;}
+    .hero h1{font-size:34px;}
+    .sec-title{font-size:27px;}
+    .stats{grid-template-columns:1fr 1fr;padding:36px 22px;}
+    .final{padding:44px 24px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="progress"></div>
+
+<!-- ============ HEADER ============ -->
+<header>
+  <div class="wrap nav">
+    <div class="brand">
+      <span class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8">
+          <circle cx="12" cy="12" r="2.4" fill="#fff" stroke="none"/>
+          <ellipse cx="12" cy="12" rx="9" ry="3.6"/>
+          <ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(60 12 12)"/>
+          <ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(120 12 12)"/>
+        </svg>
+      </span>
+      <span>
+        <span class="wm">ResearchFlow</span>
+        <span class="tag">Agent</span>
+      </span>
+    </div>
+    <nav class="nav-links">
+      <a href="#process">工作流</a>
+      <a href="#features">能力</a>
+      <a href="#capability">核心机制</a>
+      <a href="#pipeline">工具链路</a>
+      <a href="#voices">用户之声</a>
+    </nav>
+    <a class="btn btn-accent" href="https://github.com/zhiyu0814/researchflow-skill" target="_blank" rel="noopener">开始使用 ↗</a>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="aurora a1"></div>
+  <div class="aurora a2"></div>
+  <div class="wrap hero-grid">
+    <div class="reveal">
+      <span class="kicker"><span class="dot"></span>AI for Research · 文献 → 方法 工作流</span>
+      <h1>把读过的论文，<br>变成<span class="grad-text">可复用的研究依据</span></h1>
+      <p class="sub">ResearchFlow Agent 面向已明确研究方向的科研人员：将论文全文与你的关注点，整理为结构化、可回查、可复用的研究资产。一次精读，多处复用——让论文依据持续支撑方法选择、实验设计与论文写作。</p>
+      <span class="rot">Read · Reason · Reuse · Write</span>
+      <div class="cta-row">
+        <a class="btn btn-accent btn-lg" href="#process">查看工作流</a>
+        <a class="btn btn-ghost btn-lg" href="#pipeline">工具链路</a>
+      </div>
+      <p class="trust">本地优先 · 绝不覆盖你的原文</p>
+    </div>
+
+    <div class="reveal">
+      <div class="hero-card" data-tilt>
+        <div class="hc-top">
+          <span class="hc-title">UAV 风场建模 · 文献笔记</span>
+          <span class="hc-badge">19 字段 · 八段笔记</span>
+        </div>
+        <div class="frow"><span class="k">method</span><span class="v">风感知 Theta*（具体算法）</span></div>
+        <div class="frow"><span class="k">scenario</span><span class="v">城市低空 · 能耗约束 · 路径规划</span></div>
+        <div class="frow"><span class="k">data_source</span><span class="v">xxx 风场数据集（公开）</span></div>
+        <div class="frow"><span class="k">关键参数</span><span class="v">网格分辨率 5m / 时空 1Hz</span></div>
+        <div class="frow"><span class="k">依据状态</span><span class="v"><span class="state-pill st-fact">论文事实</span></span></div>
+        <div class="frow"><span class="k">未报告</span><span class="v"><span class="state-pill st-gap">列入补证清单</span></span></div>
+        <div class="hc-foot">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M20 6 9 17l-5-5"/></svg>
+          每条结论标注 事实 / 概括 / 建议 / 未报告，回到原文核查
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROCESS (3 STEPS) ============ -->
+<section class="block soft" id="process">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">PROCESS</span>
+      <h2 class="sec-title">一个科研整理，往往要走好几步</h2>
+    </div>
+    <p class="sec-sub reveal">科研不止于"得到一篇笔记"，更在于厘清关注点、追溯文献依据，并把精读沉淀为真正能复用的研究资产。</p>
+
+    <div class="steps">
+      <div class="step reveal d1">
+        <div class="step-order">FIRST · 读论文</div>
+        <div class="step-ic"><svg viewBox="0 0 24 24"><path d="M4 5h13a2 2 0 0 1 2 2v12a2 2 0 0 0-2-2H4z"/><path d="M4 5v14a2 2 0 0 0 2 2h13"/><path d="M8 9h7M8 13h7"/></svg></div>
+        <h3>读论文 · 定关注</h3>
+        <p>在 Zotero 读 PDF、高亮，手写 3–5 个关注点关键词。研究方向由你定义——Agent 不替你选题，只对齐你的关注。</p>
+      </div>
+      <div class="step reveal d2">
+        <div class="step-order">SECOND · 理依据</div>
+        <div class="step-ic"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="M8.5 11h5M11 8.5v5"/></svg></div>
+        <h3>理依据 · 标状态</h3>
+        <p>告别模型补写。Agent 按 19 字段 + 八段骨架补全笔记，每条结论标注「论文事实 / 概括 / 建议 / 未报告」，重要信息回到原文核查。</p>
+      </div>
+      <div class="step reveal d3">
+        <div class="step-order">LAST · 沉淀资产</div>
+        <div class="step-ic"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg></div>
+        <h3>沉淀资产 · 多处复用</h3>
+        <p>远离低效堆砌。结构化笔记存入 Obsidian，被周报、组会 PPT、方法白皮书等下游 Skill 直接读取复用——一次精读，处处调用。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURES ============ -->
+<section class="block" id="features">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">FEATURES</span>
+      <h2 class="sec-title">让科研人回归本质，脏活累活交给 Agent</h2>
+    </div>
+    <p class="sec-sub reveal">查论文、抽参数、比方法、列缺口——把费时费力的文献整理任务，交给 ResearchFlow Agent 执行。<b style="color:var(--ink)">点开下面每一项，看它实际产出的样子。</b></p>
+
+    <div class="fdemo reveal">
+      <div class="fdemo-nav">
+        <button class="fd-tab active" data-panel="f1"><span class="fdn">01</span>多篇横向对比</button>
+        <button class="fd-tab" data-panel="f2"><span class="fdn">02</span>关键参数速查表</button>
+        <button class="fd-tab" data-panel="f3"><span class="fdn">03</span>关键选择分析</button>
+        <button class="fd-tab" data-panel="f4"><span class="fdn">04</span>补证清单</button>
+      </div>
+      <div class="fdemo-stage">
+        <div class="fpanel active" id="f1">
+          <table class="art-table">
+            <thead><tr><th>论文 / 方法</th><th>场景</th><th>关键参数</th><th>与本文关联</th></tr></thead>
+            <tbody>
+              <tr><td><b>风感知 Theta*</b><br><span class="muted">基线方法</span></td><td>城市低空 · 能耗约束</td><td>网格 5m</td><td><span class="pill ok">可复用</span></td></tr>
+              <tr><td><b>PIGAN</b><br><span class="muted">代理模型</span></td><td>CFD → 代理</td><td>时空 1Hz</td><td><span class="pill warn">需改编</span></td></tr>
+              <tr><td><b>NSGA-II</b><br><span class="muted">多目标优化</span></td><td>安全-能耗</td><td>—</td><td><span class="pill info">提供了</span></td></tr>
+            </tbody>
+          </table>
+          <p class="art-note">同一关注点下，三篇论文的方法、场景与参数被铺成一张可比较的表——不用在搜索结果里大海捞针。</p>
+        </div>
+        <div class="fpanel" id="f2">
+          <table class="art-table">
+            <thead><tr><th>研究阶段</th><th>分辨率</th><th>输入</th><th>输出</th><th>评估指标</th></tr></thead>
+            <tbody>
+              <tr><td><b>CFD 风场</b></td><td>网格 5m</td><td>风场边界条件</td><td>三维风场</td><td>风速 MAE</td></tr>
+              <tr><td><b>代理模型</b></td><td>时空 1Hz</td><td>CFD 数据</td><td>代理模型</td><td>R²</td></tr>
+              <tr><td><b>路径规划</b></td><td>—</td><td>风场 + 能耗</td><td>安全路径</td><td>安全率 / 能耗</td></tr>
+            </tbody>
+          </table>
+          <p class="art-note">把分辨率 / 输入 / 输出 / 评估指标表格化，下次做实验设计不用重新翻 PDF——参数张口就来。</p>
+        </div>
+        <div class="fpanel" id="f3">
+          <table class="art-table">
+            <thead><tr><th>约束</th><th>选择</th><th>依据（为什么这么选）</th></tr></thead>
+            <tbody>
+              <tr><td>城市低空风场强时空变化</td><td>CFD + 代理模型，而非纯解析</td><td>解析无法捕捉湍流（文献 §2.1）</td></tr>
+              <tr><td>能耗限制紧</td><td>多目标优化，而非单目标</td><td>单目标会忽略安全边界</td></tr>
+            </tbody>
+          </table>
+          <p class="art-note">约束 → 选择 → 依据。作者为什么这么选（理论推导 / 权威引用 / 客观限制），一眼看清，方便你借鉴或反驳。</p>
+        </div>
+        <div class="fpanel" id="f4">
+          <ul class="gap-list">
+            <li><span class="pill gap">未报告</span>不同天气下路径失效概率的消融实验<span class="gap-act">→ 列入补证清单</span></li>
+            <li><span class="pill gap">未报告</span>大规模（&gt;1000 节点）计算开销<span class="gap-act">→ 列入补证清单</span></li>
+            <li><span class="pill gap">未报告</span>真实飞行验证数据<span class="gap-act">→ 列入补证清单</span></li>
+          </ul>
+          <p class="art-note">论文没报告的，显式标记为缺口、进入补证清单——而不是被 AI 悄悄补写进结论。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CAPABILITY ============ -->
+<section class="block soft" id="capability">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">CORE MECHANISM</span>
+      <h2 class="sec-title">做科研整理，不能只是聊天</h2>
+    </div>
+    <p class="sec-sub reveal">从字段结构化、笔记骨架到事实核查与安全边界，ResearchFlow Agent 帮你真正攻克"文献 → 方法"这一环。</p>
+
+    <div class="cap-wrap">
+      <div class="cap reveal d1"><span class="num">01</span><div><h4>19 字段结构化</h4><p>9 个通用元信息 + 10 个领域字段，统一 frontmatter，跨论文可比较、可检索。</p></div></div>
+      <div class="cap reveal d2"><span class="num">02</span><div><h4>八段笔记骨架</h4><p>论文画像 / 完整精读 / 关键选择 / 对本文启发 / 参数速查 / 可引用原文 / 高亮，结构稳定。</p></div></div>
+      <div class="cap reveal d3"><span class="num">03</span><div><h4>信息状态分离</h4><p>每条提取内容标注 事实 / 概括 / 建议 / 未报告，抑制科研幻觉，让重要信息回到原文。</p></div></div>
+      <div class="cap reveal d4"><span class="num">04</span><div><h4>安全规则：只追加不重写</h4><p>绝不覆盖你已整理的原始研究内容；新增默认追加新节或另建新文件。</p></div></div>
+      <div class="cap reveal d5"><span class="num">05</span><div><h4>本地优先</h4><p>论文 PDF、未发表想法、实验参数默认存本地（Zotero + Obsidian），不自动上传外部服务。</p></div></div>
+      <div class="cap reveal d6"><span class="num">06</span><div><h4>通用核心 + 领域可定制</h4><p>核心流程与领域无关；仅替换领域字段与示例包，即可用于任何学科方向。</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ INTERACTIVE INFO-STATE DEMO ============ -->
+<section class="block">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">LIVE DEMO</span>
+      <h2 class="sec-title">信息状态分离 · 点开看每条结论怎么被标注</h2>
+    </div>
+    <p class="sec-sub reveal">同一篇论文的四个结论，分别落在不同状态。试试点击切换——未报告的信息不会被写进结论。</p>
+
+    <div class="ist reveal">
+      <div class="ist-head"><span class="ist-dot"></span>某 UAV 风场论文 · 四条提取结论的状态归属</div>
+      <div class="ist-tabs">
+        <button class="ist-tab active" data-panel="p-fact">论文事实</button>
+        <button class="ist-tab" data-panel="p-sum">内容概括</button>
+        <button class="ist-tab" data-panel="p-sug">研究建议</button>
+        <button class="ist-tab" data-panel="p-gap">未报告</button>
+      </div>
+      <div class="ist-body">
+        <div class="ist-panel active" id="p-fact">
+          <div class="ist-meta"><span class="state-pill st-fact">论文事实</span><span style="font-size:12px;color:var(--ink-3)">原文明确报告、可回查</span></div>
+          <p>作者采用风感知 Theta* 作为路径规划求解器，并在 §3.2 给出风速阈值与能耗模型的耦合方式。</p>
+          <div class="ist-code">method: 风感知 Theta*　|　来源: 原文 §3.2（附 Zotero 跳转锚点）</div>
+        </div>
+        <div class="ist-panel" id="p-sum">
+          <div class="ist-meta"><span class="state-pill" style="background:#E7F0FF;color:#2F6BFF">内容概括</span><span style="font-size:12px;color:var(--ink-3)">对原文的压缩转述</span></div>
+          <p>整体看，论文沿"CFD 风场 → 代理模型 → 多目标路径优化"三阶段推进，各阶段分辨率逐级放大。</p>
+          <div class="ist-code">概括自 §2–§5　|　非原文原句，已注明压缩来源</div>
+        </div>
+        <div class="ist-panel" id="p-sug">
+          <div class="ist-meta"><span class="state-pill" style="background:#FFF3E0;color:#B26A00">研究建议</span><span style="font-size:12px;color:var(--ink-3)">本 Agent / 研究者延伸</span></div>
+          <p>若你的场景能耗约束更紧，可把代理模型替换为贝叶斯优化，但需自行验证采样效率——这不是原文结论。</p>
+          <div class="ist-code">标注「非原文结论」　|　仅作下一步实验设计参考</div>
+        </div>
+        <div class="ist-panel" id="p-gap">
+          <div class="ist-meta"><span class="state-pill st-gap">未报告</span><span style="font-size:12px;color:var(--ink-3)">论文未给出 → 进入补证清单</span></div>
+          <p>论文未提供不同天气条件下路径失效概率的消融实验，因此该指标不进入结论，而是列入补证清单待你后续补证。</p>
+          <div class="ist-code">补证清单: 天气鲁棒性消融　|　不进结论、不补写</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STATS ============ -->
+<section class="block soft">
+  <div class="wrap">
+    <div class="stats">
+      <div class="stat"><div class="big" data-target="19" data-suffix="">0</div><div class="lbl">结构化文献字段</div></div>
+      <div class="stat"><div class="big" data-target="8" data-suffix="">0</div><div class="lbl">段笔记骨架</div></div>
+      <div class="stat"><div class="big" data-target="4" data-suffix="">0</div><div class="lbl">种信息状态分离</div></div>
+      <div class="stat"><div class="big" data-target="100" data-suffix="%">0</div><div class="lbl">本地优先 · 不覆盖原文</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PIPELINE ============ -->
+<section class="block soft" id="pipeline" style="padding-top:0;">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">PIPELINE</span>
+      <h2 class="sec-title">标准工具链路，一次跑通</h2>
+    </div>
+    <p class="sec-sub reveal">四环相扣：文献源 → 知识库 → CODEX + Skill 执行引擎 → 成果复用。这一整套流程，就是 ResearchFlow。</p>
+
+    <div class="pipe reveal">
+      <div class="pipe-step">
+        <div class="pipe-ic p-zotero"><svg class="pipe-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Zotero"><title>Zotero</title><path fill="#fff" d="M21.231 2.462 7.18 20.923h14.564V24H2.256v-2.462L16.308 3.076H2.975V0h18.256v2.462z"/></svg></div>
+        <h5>Zotero</h5>
+        <p>读 PDF、高亮、生成全文缓存，提供 citekey 与条目。</p>
+      </div>
+      <div class="pipe-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="pipe-step">
+        <div class="pipe-ic p-obsidian"><svg class="pipe-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Obsidian"><title>Obsidian</title><path fill="#fff" d="M19.355 18.538a68.967 68.959 0 0 0 1.858-2.954.81.81 0 0 0-.062-.9c-.516-.685-1.504-2.075-2.042-3.362-.553-1.321-.636-3.375-.64-4.377a1.707 1.707 0 0 0-.358-1.05l-3.198-4.064a3.744 3.744 0 0 1-.076.543c-.106.503-.307 1.004-.536 1.5-.134.29-.29.6-.446.914l-.31.626c-.516 1.068-.997 2.227-1.132 3.59-.124 1.26.046 2.73.815 4.481.128.011.257.025.386.044a6.363 6.363 0 0 1 3.326 1.505c.916.79 1.744 1.922 2.415 3.5zM8.199 22.569c.073.012.146.02.22.02.78.024 2.095.092 3.16.29.87.16 2.593.64 4.01 1.055 1.083.316 2.198-.548 2.355-1.664.114-.814.33-1.735.725-2.58l-.01.005c-.67-1.87-1.522-3.078-2.416-3.849a5.295 5.295 0 0 0-2.778-1.257c-1.54-.216-2.952.19-3.84.45.532 2.218.368 4.829-1.425 7.531zM5.533 9.938c-.023.1-.056.197-.098.29L2.82 16.059a1.602 1.602 0 0 0 .313 1.772l4.116 4.24c2.103-3.101 1.796-6.02.836-8.3-.728-1.73-1.832-3.081-2.55-3.831zM9.32 14.01c.615-.183 1.606-.465 2.745-.534-.683-1.725-.848-3.233-.716-4.577.154-1.552.7-2.847 1.235-3.95.113-.235.223-.454.328-.664.149-.297.288-.577.419-.86.217-.47.379-.885.46-1.27.08-.38.08-.72-.014-1.043-.095-.325-.297-.675-.68-1.06a1.6 1.6 0 0 0-1.475.36l-4.95 4.452a1.602 1.602 0 0 0-.513.952l-.427 2.83c.672.59 2.328 2.316 3.335 4.711.09.21.175.43.253.653z"/></svg></div>
+        <h5>Obsidian</h5>
+        <p>Zotero Integration 按模板导入，产出带 9 元信息字段的笔记。</p>
+      </div>
+      <div class="pipe-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="pipe-step">
+        <div class="pipe-ic p-skill"><svg class="pipe-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OpenAI Codex"><title>OpenAI Codex</title><path fill="#fff" d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7714-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.071.071 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z"/></svg></div>
+        <h5>CODEX + Skill</h5>
+        <p>在 CODEX（OpenAI）中调用 ResearchFlow 的各类 Skill：读全文、补笔记、生成组会 PPT……也可由 Claude 等模型驱动同一套流程。</p>
+      </div>
+      <div class="pipe-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="pipe-step">
+        <div class="pipe-ic p-down">↓</div>
+        <h5>下游复用</h5>
+        <p>Skill 直接输出周报 / 组会 PPT / 方法白皮书等成果，复用同一份笔记。</p>
+      </div>
+    </div>
+    <p class="reveal" style="font-size:13px;color:var(--ink-3);text-align:center;margin-top:8px;">没有 Zotero 也能用：手动在 Obsidian 建笔记、手填字段、粘全文，再交给 Agent——结构不变。</p>
+  </div>
+</section>
+
+<!-- ============ PPT DEMO (Bohr-style smooth) ============ -->
+<section class="block" id="ppt">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">DOWNSTREAM</span>
+      <h2 class="sec-title">组会 PPT · 从笔记到上台，丝滑生成</h2>
+    </div>
+    <p class="sec-sub reveal">组会 PPT Skill 将结构化笔记直接转为可放映的 Slide，覆盖两类核心场景——<b style="color:var(--ink)">文献汇报</b>与<b style="color:var(--ink)">个人科研进度汇报</b>：先生成 Deck Plan 确认结构，再成稿带讲者备注。</p>
+
+    <div class="ppt-demo reveal">
+      <!-- Bohrium-style: left sidebar plan + right stage -->
+      <div class="ppt-main">
+        <div class="ppt-sidebar">
+          <div class="ppt-sb-head">
+            <span class="ppt-sb-dot"></span>
+            Deck Plan · 组会汇报
+          </div>
+          <div class="ppt-plan" id="pptPlan"></div>
+        </div>
+        <div class="ppt-stage-wrap">
+          <!-- Stage with smooth transitions -->
+          <div class="ppt-stage" id="pptStage">
+            <div class="ppt-accent-bar"></div>
+            <div class="ppt-canvas" id="pptCanvas">
+              <div class="ppt-layer" id="layerA"></div>
+              <div class="ppt-layer" id="layerB"></div>
+            </div>
+            <div class="ppt-rec" title="正在放映"><span class="ppt-rec-dot"></span></div>
+          </div>
+          <!-- Speaker notes -->
+          <div class="ppt-note"><b>🎤 讲者备注</b><span id="pptNoteText"></span></div>
+          <!-- Controls -->
+          <div class="ppt-controls">
+            <div class="ppt-nav">
+              <button class="ppt-btn" id="pptPrev" aria-label="上一页">‹</button>
+              <button class="ppt-btn play" id="pptPlay" aria-label="自动放映">▶</button>
+              <button class="ppt-btn" id="pptNext" aria-label="下一页">›</button>
+              <span class="ppt-page-idx" id="pptPageIdx">1 / 3</span>
+            </div>
+            <div class="ppt-dots" id="pptDots"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ VOICES ============ -->
+<section class="block" id="voices">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">VOICES</span>
+      <h2 class="sec-title">把每一次精读，沉淀为个人学术资产</h2>
+    </div>
+    <p class="sec-sub reveal">那些与 Agent 碰撞出来的文献依据、参数表和选择分析，都不应该躺在聊天记录里吃灰。</p>
+
+    <div class="quotes">
+      <div class="quote reveal d1">
+        <p>"师姐只给了我几个关键词和几篇种子论文。交给 Agent 后，它很快整理出了研究方向、重点文献和核心参数，终于知道下一步该读什么了。"</p>
+        <div class="q-who"><span class="q-av">李</span><div><div class="nm">李同学</div><div class="rl">研究生 · 城市低空风场建模</div></div></div>
+      </div>
+      <div class="quote reveal d2">
+        <p>"综述初稿最难的是搭框架。Agent 先帮我梳理领域脉络、代表性工作和文献关系，我再基于它给出的结构补充观点，写起来顺了很多。"</p>
+        <div class="q-who"><span class="q-av">王</span><div><div class="nm">王同学</div><div class="rl">博士生 · 路径规划</div></div></div>
+      </div>
+      <div class="quote reveal d3">
+        <p>"最卡壳的是参数散落各处。现在关键参数速查表和选择依据都在笔记里，做实验设计时直接调，不用再翻十几篇 PDF。"</p>
+        <div class="q-who"><span class="q-av">张</span><div><div class="nm">张同学</div><div class="rl">博士生 · 代理模型</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="block" id="start">
+  <div class="wrap">
+    <div class="final reveal">
+      <h2>把今天卡住的任务，<br>先往前推进一步</h2>
+      <p>查文献浪里淘金？写综述毫无头绪？论文参数散落各处？没关系，从现在开始，交给 ResearchFlow Agent，一次精读、多处复用。</p>
+      <div class="cta-row">
+        <a class="btn btn-accent btn-lg" href="https://github.com/zhiyu0814/researchflow-skill" target="_blank" rel="noopener">开始体验 ↗</a>
+        <a class="btn btn-ghost btn-lg" href="#pipeline">查看工具链路</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="wrap foot">
+    <div class="left">© ResearchFlow Agent · 一次精读，多处复用 · 本地优先的文献→方法工作流</div>
+    <div class="links">
+      <a href="#process">工作流</a>
+      <a href="#capability">核心机制</a>
+      <a href="#pipeline">工具链路</a>
+      <a href="#voices">用户之声</a>
+    </div>
+  </div>
+</footer>
+
+<button class="btt" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+
+<script>
+  // ---- Scroll progress ----
+  const prog=document.querySelector('.progress');
+  const onScroll=()=>{
+    const h=document.documentElement;
+    const sc=h.scrollTop/(h.scrollHeight-h.clientHeight);
+    prog.style.width=(sc*100)+'%';
+  };
+  window.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+
+  // ---- Reveal on scroll ----
+  const io=new IntersectionObserver((es)=>{
+    es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+  },{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  // ---- Count-up stats ----
+  const statObs=new IntersectionObserver((es)=>{
+    es.forEach(e=>{ if(e.isIntersecting){ countUp(e.target); statObs.unobserve(e.target);} });
+  },{threshold:.4});
+  function countUp(numEl){
+    numEl.closest('.stat').classList.add('in');
+    const target=+numEl.dataset.target, suffix=numEl.dataset.suffix||'', dur=1200, start=performance.now();
+    function tick(now){
+      const p=Math.min((now-start)/dur,1);
+      const eased=1-Math.pow(1-p,3);
+      numEl.textContent=Math.round(target*eased)+suffix;
+      if(p<1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+  document.querySelectorAll('.stat .big').forEach(el=>statObs.observe(el));
+
+  // ---- 3D tilt ----
+  document.querySelectorAll('[data-tilt]').forEach(card=>{
+    card.addEventListener('mousemove',e=>{
+      const r=card.getBoundingClientRect();
+      const px=(e.clientX-r.left)/r.width-0.5;
+      const py=(e.clientY-r.top)/r.height-0.5;
+      card.style.transform=`perspective(900px) rotateY(${px*7}deg) rotateX(${-py*7}deg)`;
+    });
+    card.addEventListener('mouseleave',()=>{ card.style.transform=''; });
+  });
+
+  // ---- Rotating tagline ----
+  const rot=document.querySelector('.rot');
+  const words=['Read · Reason · Reuse · Write','一次精读，多处复用','本地优先 · 绝不覆盖原文'];
+  let wi=0;
+  setInterval(()=>{
+    rot.style.opacity='0'; rot.style.transform='translateY(8px)';
+    setTimeout(()=>{ wi=(wi+1)%words.length; rot.textContent=words[wi]; rot.style.opacity='1'; rot.style.transform='none'; },360);
+  },2600);
+
+  // ---- Info-state tabs ----
+  document.querySelectorAll('.ist-tab').forEach(tab=>{
+    tab.addEventListener('click',()=>{
+      const grp=tab.closest('.ist');
+      grp.querySelectorAll('.ist-tab').forEach(t=>t.classList.remove('active'));
+      grp.querySelectorAll('.ist-panel').forEach(p=>p.classList.remove('active'));
+      tab.classList.add('active');
+      grp.querySelector('#'+tab.dataset.panel).classList.add('active');
+    });
+  });
+
+  // ---- Feature demo tabs ----
+  document.querySelectorAll('.fd-tab').forEach(tab=>{
+    tab.addEventListener('click',()=>{
+      const grp=tab.closest('.fdemo');
+      grp.querySelectorAll('.fd-tab').forEach(t=>t.classList.remove('active'));
+      grp.querySelectorAll('.fpanel').forEach(p=>p.classList.remove('active'));
+      tab.classList.add('active');
+      grp.querySelector('#'+tab.dataset.panel).classList.add('active');
+    });
+  });
+
+  // ── PPT DEMO (Bohr-style smooth · 3 pages · real content) ──
+  function svgW(w,h,inner){ return '<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">'+inner+'</svg>'; }
+  function rR(x,y,w,h,rx,fill){ return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="'+(rx||6)+'" fill="'+fill+'"/>'; }
+  function tT(x,y,t,fill,sz,anchor,w){ var a=anchor||'middle'; var st='font-size:'+(sz||13)+';fill:'+(fill||'#475569')+';font-family:Noto Sans SC,sans-serif'+(w?';font-weight:'+w:''); return '<text x="'+x+'" y="'+y+'" text-anchor="'+a+'" '+st+'>'+t+'</text>'; }
+  function visCover(){ return svgW(420,260, rR(0,0,420,260,16,'#F8FBFF')+'<defs><linearGradient id="cg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#2F6BFF"/><stop offset="100%" stop-color="#15C8D6"/></linearGradient></defs>'+rR(110,50,200,52,12,'#2F6BFF')+tT(210,82,'城市风环境 × 无人机','#fff',18,'middle',700)+tT(210,108,'文献阅读总结','#fff',12,'middle')+rR(70,130,280,2,1,'#E4ECF5')+tT(210,155,'风环境模拟与风险识别（5篇）· 路径规划与轨迹优化（5篇）','#475569',11)+tT(210,175,'控制与稳定性分析（2篇）· 风场测量与实测验证（4篇）','#94A3B8',10.5)+rR(85,198,250,38,18,'url(#cg2)')+tT(210,223,'ResearchFlow Agent 自动生成','#fff',12,'middle',600)); }
+    // ── Page 2: 文献汇报（Wang 2025 · 两屏内容重排）──
+    function visLitReview(){
+    var h='<div style="font-size:16px;line-height:1.55;">';
+    h+='<div style="display:flex;align-items:center;gap:12px;margin-bottom:11px;">';
+    h+='<span style="background:#E7F0FF;color:#2F6BFF;font-weight:700;font-size:13px;padding:4px 12px;border-radius:8px;">Physics of Fluids · Q1/2区 · IF 4.3</span>';
+    h+='<span style="color:#475569;font-size:13px;">第一作者 等（高校 力学与建筑工程学院，2025）</span>';
+    h+='</div>';
+    h+='<div style="font-weight:700;font-size:16px;color:#0E1726;line-height:1.34;margin-bottom:11px;">Evaluation of urban wind effects on flight path planning of delivery drones using CFD simulations<span style="font-weight:500;color:#475569;font-size:13px;">（基于 CFD 的城市风效应对配送无人机路径规划影响评估）</span></div>';
+    h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:11px;">';
+    var tags=[['安全上限','red'],['潜在偏差点','orange'],['合成风速','blue'],['能耗指数','green']];
+    tags.forEach(function(t){ h+='<span class="ppt-tag '+t[1]+'">'+t[0]+'</span>'; });
+    h+='</div>';
+    h+='<div style="background:linear-gradient(135deg,#1a5c2e,#248c47);border-radius:10px;padding:12px 16px;margin-bottom:12px;color:#fff;font-size:15px;line-height:1.55;">提出 <b>wc/ws 能耗指数</b>，量化风对能耗影响（<b>-51% ~ +203%</b>），可直接作为 PINN 训练的物理损失目标。</div>';
+    h+='<div style="display:flex;gap:18px;align-items:center;">';
+    h+='<div style="flex:1;min-width:0;font-size:14px;color:#475569;line-height:1.6;">';
+    h+='<b style="color:#0E1726;font-size:15px;">关键 CFD 设置</b><br/>';
+    h+='· 求解器：OpenFOAM-V2212 / k-ω SST<br/>';
+    h+='· 计算域：ICC + ER 双子域耦合<br/>';
+    h+='· 网格：1450 万单元，首层 0.25m<br/>';
+    h+='· 工况：12 风向 × 5 风速 = 60 组';
+    h+='</div>';
+    h+='<div style="flex:0 0 196px;">';
+    h+=svgW(196,120,
+      rR(2,2,192,116,10,'#f8fafc')+
+      '<text x="98" y="17" text-anchor="middle" font-size="10.5" fill="#94A3B8">风速 NMAE 对比</text>'+
+      '<line x1="28" y1="104" x2="168" y2="104" stroke="#E4ECF5" stroke-width="1"/>'+
+      '<rect x="40" y="44" width="24" height="60" rx="4" fill="#C0392B"/><text x="52" y="39" text-anchor="middle" font-size="9.5" fill="#C0392B" font-weight="700">9.65</text>'+
+      '<rect x="86" y="50" width="24" height="54" rx="4" fill="#1E8E4E"/><text x="98" y="45" text-anchor="middle" font-size="9.5" fill="#1E8E4E" font-weight="700">8.79</text>'+
+      '<rect x="132" y="46" width="24" height="58" rx="4" fill="#2F6BFF"/><text x="144" y="41" text-anchor="middle" font-size="9.5" fill="#2F6BFF" font-weight="700">8.08</text>'+
+      '<text x="52" y="114" text-anchor="middle" font-size="8.5" fill="#94A3B8">Baseline</text>'+
+      '<text x="98" y="114" text-anchor="middle" font-size="8.5" fill="#94A3B8">Fine</text>'+
+      '<text x="144" y="114" text-anchor="middle" font-size="8.5" fill="#94A3B8">Extrafine</text>'
+    );
+    h+='</div>';
+    h+='</div>';
+    h+='<div style="margin-top:9px;font-size:14px;color:#7A6318;background:#FFF8E7;border:1px solid #E8D5A3;border-radius:9px;padding:9px 13px;line-height:1.5;">✓ 模型验证：对比气象塔实测，NMAE 8.08%~9.65%，网格独立，Baseline 方案效率最优。</div>';
+    h+='</div>';
+    return h;
+  }
+
+  // ── Page 3: 研究进展表格（整宽重排） ──
+  function visProgressTable(){
+    var h='<div style="display:flex;flex-direction:column;gap:12px;">';
+    // 一句话总览 chips
+    h+='<div style="display:flex;gap:10px;flex-wrap:wrap;font-size:14px;">';
+    var chips=[['管线已通','#2F6BFF'],['瓶颈：天气鲁棒性','#B26A00'],['wc/ws 可复用','#1E8E4E']];
+    chips.forEach(function(c){ h+='<span style="background:'+c[1]+'16;color:'+c[1]+';border:1px solid '+c[1]+'40;padding:5px 14px;border-radius:9px;font-weight:600;">'+c[0]+'</span>'; });
+    h+='</div>';
+    // 整宽紧凑表格
+    h+='<div class="ppt-table-wrap"><table class="ppt-table sm">';
+    h+='<thead><tr><th style="width:19%">任务模块</th><th style="width:10%">状态</th><th style="width:48%">进度说明</th><th style="width:23%">预计 / 备注</th></tr></thead>';
+    var rows=[
+      ["CFD 风场管线","<span class=\"ppt-tag green\">已完成</span>","OpenFOAM-V2212 + k-ω SST 搭建完成，与 KP 气象塔实测对齐（NMAE ~8%）","已闭环"],
+      ["19 字段笔记模板","<span class=\"ppt-tag green\">已完成</span>","关注点关键词体系接入，模板在 Obsidian 落地可用","已闭环"],
+      ["代理模型训练","<span class=\"ppt-tag orange\">进行中</span>","稳态工况 MAE 低；阵风偏差明显，需天气鲁棒建模","预计 8 月中"],
+      ["天气消融实验","<span class=\"ppt-tag blue\">待开始</span>","晴 / 阴 / 雨 / 台风下模型失效概率消融","计划 8 月下"],
+      ["多目标路径优化","<span class=\"ppt-tag blue\">待开始</span>","安全率 + 能耗双指标（复用 wc/ws 框架）","计划 9 月初"],
+      ["补证清单更新","<span class=\"ppt-tag red\">风险项</span>","真实飞行验证数据缺失，需协调合作方获取 / 自采","需协调资源"]
+    ];
+    rows.forEach(function(r){
+      h+='<tr><td style="font-weight:600;color:#0E1726;">'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td style="color:#94A3B8;white-space:nowrap;">'+r[3]+'</td></tr>';
+    });
+    h+='</table></div>';
+    // 汇总卡片
+    h+='<div style="display:flex;gap:12px;">';
+    var summary=[{l:"已完成",c:"#1E8E4E",n:2},{l:"进行中",c:"#B26A00",n:1},{l:"待开始",c:"#2F6BFF",n:2},{l:"风险项",c:"#C0392B",n:1}];
+    summary.forEach(function(s){ h+='<div style="background:'+s.c+'18;border:1px solid '+s.c+'40;border-radius:12px;padding:10px 14px;text-align:center;flex:1;display:flex;align-items:center;justify-content:center;gap:10px;"><div style="font-size:26px;font-weight:700;color:'+s.c+';line-height:1;">'+s.n+'</div><div style="font-size:14px;color:'+s.c+'cc;line-height:1.15;">'+s.l+'</div></div>'; });
+    h+='</div>';
+    h+='</div>';
+    return h;
+  }
+
+  var pptDeck=[
+    {cover:true,title:'城市风环境 × 无人机\n文献阅读总结',sub:'风环境模拟与风险识别（5篇）· 路径规划与轨迹优化（5篇）\n控制与稳定性分析（2篇）· 风场测量与实测验证（4篇）',org:'XX大学 XX实验室',presenter:'汇报人：XXX',date:'时间：XX',note:'开场白：本期汇报聚焦第一类风环境模拟与风险识别，重点详读 Wang 2025 的城市风效应影响评估论文（含完整 CFD 参数），并汇报研究进展。'},
+    {title:'文献汇报 · 城市风效应对无人机路径规划的影响评估（高校团队, 2025）',bullets:['为什么读：城市风场 → 无人机能耗，与我的课题直接相关','他们做了什么：CFD 模拟 60 组风况，量化风致能耗波动','关键产出：wc/ws 能耗指数（-51% ~ +203%），可作 PINN 物理损失','可信度：NMAE 8.08%~9.65%，网格独立、Baseline 效率最优'],vis:visLitReview,note:'这一页是整篇汇报的核心，内容已脱敏。左列是汇报叙事（为什么读/做了什么/产出/可信度），右侧是论文关键信息卡 + CFD 设置 + NMAE 验证图。讲的时候按左列四步走即可。'},
+    {title:'研究进展 · 进度总览',fullVis:true,bullets:['整体节奏：管线已通（CFD + 笔记模板），当前瓶颈在代理模型的天气鲁棒性','下一步优先级：天气消融 → 多目标优化 → 补证协调','wc/ws 指数框架可直接复用到多目标优化的能耗维度'],vis:visProgressTable,note:'用整宽表格比时间线更清晰——每个任务的状态、进度、截止日期一目了然。诚实标注了风险项，组会上可以主动讨论解决方案。'}
+  ];
+  var curIdx=0, playTimer=null, activeLayer=0, autoWanted=false;
+  var $canvasEl=document.getElementById('pptCanvas');
+  var $layerA=document.getElementById('layerA'), $layerB=document.getElementById('layerB');
+  var $noteEl=document.getElementById('pptNoteText'), $planEl=document.getElementById('pptPlan');
+  var $dotsEl=document.getElementById('pptDots'), $pageIdxEl=document.getElementById('pptPageIdx');
+  var $footIdxEl=document.getElementById('pptFootIdx');
+  function renderPlan(){ $planEl.innerHTML=''; pptDeck.forEach(function(s,i){ var d=document.createElement('div'); d.className='plan-item'+(i===curIdx?' active':''); d.innerHTML='<span class="plan-num">'+String(i+1).padStart(2,'0')+'</span><span>'+(s.cover?'封面':s.title.substring(0,28)+(s.title.length>28?'…':''))+'</span>'; d.addEventListener('click',function(e){ e.preventDefault(); stopPlay(); goTo(i, i>curIdx?1:-1); }); $planEl.appendChild(d); }); }
+  function renderDots(){ $dotsEl.innerHTML=''; pptDeck.forEach(function(s,i){ var d=document.createElement('span'); d.className='ppt-dot'+(i===curIdx?' active':''); d.addEventListener('click',function(){ stopPlay(); goTo(i, i>curIdx?1:-1); }); $dotsEl.appendChild(d); }); }
+  function syncChrome(i){
+    $noteEl.textContent=pptDeck[i].note||'';
+    $pageIdxEl.textContent=(i+1)+' / '+pptDeck.length;
+    if($footIdxEl) $footIdxEl.textContent=(i+1)+' / '+pptDeck.length;
+    Array.prototype.forEach.call($planEl.children,function(c,k){ c.classList.toggle('active',k===i); });
+    Array.prototype.forEach.call($dotsEl.children,function(c,k){ c.classList.toggle('active',k===i); });
+  }
+  function buildLayer(el, i){
+    var s=pptDeck[i];
+    if(s.cover){
+      el.className='ppt-layer is-cover';
+      el.innerHTML='<div class="ppt-cover-kicker">组会汇报 · GROUP MEETING</div><div class="ppt-cover-title">'+s.title.replace(/\n/g,'<br/>')+'</div><div class="ppt-cover-meta">'+(s.sub||'').replace(/\n/g,'<br/>')+'</div><div class="ppt-cover-rule"></div><div class="ppt-cover-info"><span>'+s.org+'</span><span>'+s.presenter+'</span><span>'+s.date+'</span></div>';
+      return;
+    }
+    el.className='ppt-layer is-content';
+    var fullVis=!!s.fullVis;
+    var bullets=(s.bullets||[]).map(function(t){return '<li>'+t+'</li>';}).join('');
+    var h='<div class="ppt-pageno">P'+(i+1)+'</div>';
+    h+='<div class="ppt-title">'+s.title+'</div>';
+    if(s.meta) h+='<div class="ppt-meta">'+s.meta+'</div>';
+    h+='<div class="ppt-body">';
+    if(!fullVis) h+='<div class="ppt-col-text"><ul class="ppt-bullets">'+bullets+'</ul></div>';
+    h+='<div class="ppt-col-vis'+(fullVis?' full':'')+'"><div class="ppt-vis">'+(s.vis?s.vis():'')+'</div></div>';
+    h+='</div>';
+    el.innerHTML=h;
+    var lis=el.querySelectorAll('.ppt-bullets li');
+    Array.prototype.forEach.call(lis,function(li,k){ li.classList.remove('show'); setTimeout(function(){ li.classList.add('show'); },80+k*90); });
+  }
+  // 整个 1280×720 画布按比例缩放，封面与内容页始终同一尺寸
+  function scaleCanvas(){
+    if(!$canvasEl) return;
+    var stage=document.getElementById('pptStage');
+    if(!stage) return;
+    var k=stage.clientWidth/1280;
+    if(k>0 && isFinite(k)) $canvasEl.style.transform='scale('+k+')';
+  }
+  // 走马灯：进出两层同时平移，互不透白
+  function goTo(idx, dir){
+    dir=dir||1;
+    var n=pptDeck.length;
+    var nextIdx=((idx%n)+n)%n;
+    if(nextIdx===curIdx) return;
+    var outLayer = activeLayer===0?$layerA:$layerB;
+    var inLayer  = activeLayer===0?$layerB:$layerA;
+    buildLayer(inLayer, nextIdx);
+    inLayer.style.transition='none';
+    inLayer.style.transform='translateX('+(dir>0?100:-100)+'%)';
+    void inLayer.offsetWidth;
+    inLayer.style.transition='';
+    outLayer.style.transform='translateX('+(dir>0?-100:100)+'%)';
+    inLayer.style.transform='translateX(0)';
+    activeLayer = activeLayer===0?1:0;
+    curIdx=nextIdx;
+    syncChrome(nextIdx);
+    setTimeout(function(){ outLayer.style.transition='none'; outLayer.style.transform='translateX('+(dir>0?100:-100)+'%)'; void outLayer.offsetWidth; outLayer.style.transition=''; }, 460);
+  }
+  function startPlay(){ if(playTimer) return; autoWanted=true; document.getElementById('pptPlay').textContent='⏸'; playTimer=setInterval(function(){ goTo(curIdx+1,1); },3000); }
+  function stopPlay(){ if(playTimer){ clearInterval(playTimer); playTimer=null; document.getElementById('pptPlay').textContent='▶'; } }
+  document.getElementById('pptNext').addEventListener('click',function(){ stopPlay(); goTo(curIdx+1,1); });
+  document.getElementById('pptPrev').addEventListener('click',function(){ stopPlay(); goTo(curIdx-1,-1); });
+  document.getElementById('pptPlay').addEventListener('click',function(){ if(playTimer){ stopPlay(); autoWanted=false; } else { startPlay(); } });
+  // 悬停暂停：读者一凑近看就停，避免“不知还能切换就滑到后面”
+  var $stage=document.getElementById('pptStage');
+  $stage.addEventListener('mouseenter',function(){ if(playTimer) stopPlay(); });
+  $stage.addEventListener('mouseleave',function(){ if(autoWanted && !playTimer) startPlay(); });
+  renderPlan(); renderDots();
+  buildLayer($layerA,0); $layerB.style.transform='translateX(100%)'; activeLayer=0; syncChrome(0); scaleCanvas();
+  window.addEventListener('resize',function(){ scaleCanvas(); });
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(function(){ scaleCanvas(); }); }
+  setTimeout(scaleCanvas,300); setTimeout(scaleCanvas,800);
+  // 滚动进入视口自动放映
+  var pptObs=new IntersectionObserver(function(entries){ if(entries[0].isIntersecting && !playTimer){ autoWanted=true; startPlay(); } },{threshold:.25});
+  pptObs.observe(document.getElementById('ppt'));
+
+  // ---- Back to top ----
+  const btt=document.querySelector('.btt');
+  window.addEventListener('scroll',()=>{ btt.classList.toggle('show', window.scrollY>520); },{passive:true});
+  btt.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+</script>
+</body>
+</html>
